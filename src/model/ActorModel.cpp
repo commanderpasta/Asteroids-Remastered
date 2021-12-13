@@ -2,9 +2,9 @@
 
 unsigned int idCount = 0;
 
-ActorModel::ActorModel(float startingPosition[3], float rotation, std::string texturePath, std::string shaderPath, Shape shape, int boundaryX, int boundaryY)
+ActorModel::ActorModel(float startingPosition[3], float rotation, std::string texturePath, std::string shaderPath, std::string type, Shape shape, int boundaryX, int boundaryY)
 	: position{ startingPosition[0], startingPosition[1], startingPosition[2] }, id(idCount), rotation(rotation), texturePath(texturePath), shaderPath(shaderPath), 
-	shape(shape), boundaryX(boundaryX), boundaryY(boundaryY) {
+	shape(shape), boundaryX(boundaryX), boundaryY(boundaryY), type(type) {
 	idCount++;
 }
 

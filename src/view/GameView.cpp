@@ -63,13 +63,25 @@ std::vector<std::string> GameView::GetInput() const {
     return keyboardEvents;
 }
 
-void GameView::AddActor(Shape shape, std::string& shaderPath, std::string& texturePath, unsigned int id) { 
-    if (shape == Shape::Triangle) {
-        ActorView newActor(TriangleShape::indices.data(), TriangleShape::positions.data(), 6, TriangleShape::positions.size(), shaderPath, texturePath, id);
+void GameView::AddActor(Shape shape, std::string& shaderPath, std::string& texturePath, std::string& type, unsigned int id) {
+    if (this->actorTypes.count(type) == 1) {
+        ActorView newActor(actorTypes.find(type)->second, shaderPath, id);
         this->actors.insert({ id, std::move(newActor) });
-    } else if (shape == Shape::Quad) {
-        ActorView newActor(QuadShape::indices.data(), QuadShape::positions.data(), 8, QuadShape::positions.size(), shaderPath, texturePath, id);
-        this->actors.insert({ id, std::move(newActor) });
+    } else {
+        if (shape == Shape::Triangle) {
+            std::shared_ptr<ActorDataView> newActorType = std::make_shared<ActorDataView>(TriangleShape::indices.data(), TriangleShape::positions.data(), 6, TriangleShape::positions.size(), texturePath);
+            this->actorTypes.insert({ type, newActorType });
+
+            ActorView newActor(newActorType, shaderPath, id);
+            this->actors.insert({ id, std::move(newActor) });
+        }
+        else if (shape == Shape::Quad) {
+            std::shared_ptr<ActorDataView> newActorType = std::make_shared<ActorDataView>(QuadShape::indices.data(), QuadShape::positions.data(), 8, QuadShape::positions.size(), texturePath);
+            this->actorTypes.insert({ type, newActorType });
+
+            ActorView newActor(newActorType, shaderPath, id);
+            this->actors.insert({ id, std::move(newActor) });
+        }
     }
 }
 
@@ -78,28 +90,28 @@ void GameView::Render()  {
     unsigned int count = 0;
     for (auto& actor : this->actors) {
         actor.second.shader.Bind();
-        actor.second.va.Bind();
-        actor.second.ib.Bind();
+        actor.second.data->va.Bind();
+        actor.second.data->ib.Bind();
 
-        GLCall(glDrawElements(GL_TRIANGLES, actor.second.ib.GetCount(), GL_UNSIGNED_INT, nullptr));
+        GLCall(glDrawElements(GL_TRIANGLES, actor.second.data->ib.GetCount(), GL_UNSIGNED_INT, nullptr));
         count++;
     }
 }
 
 void GameView::Update() {
     // delete actors in view
-    for (auto actor = model->actors.cbegin(), next_actor = actor; actor != model->actors.cend(); actor = next_actor)
+    for (auto actor = this->actors.cbegin(), next_actor = actor; actor != this->actors.cend(); actor = next_actor)
     {
         ++next_actor;
         if (model->actors.count(actor->first) != 1) {
-            model->actors.erase(actor);
+            this->actors.erase(actor);
         }
     }
 
     // add new actors in view
     for (auto& currentActorModel : model->actors) {
         if (this->actors.count(currentActorModel.first) != 1) {
-            this->AddActor(currentActorModel.second->shape, currentActorModel.second->shaderPath, currentActorModel.second->texturePath, currentActorModel.second->id);
+            this->AddActor(currentActorModel.second->shape, currentActorModel.second->shaderPath, currentActorModel.second->texturePath, currentActorModel.second->type, currentActorModel.second->id);
         }
 
         // update actor position in view

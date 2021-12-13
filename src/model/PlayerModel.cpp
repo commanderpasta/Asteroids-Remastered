@@ -3,7 +3,7 @@
 const float DELTA = 0.03f;
 
 PlayerModel::PlayerModel(float startingPosition[3], float rotation, int boundaryX, int boundaryY)
-	: ActorModel(startingPosition, rotation, "res/textures/spaceshipNeu.bmp", "res/shaders/Basic.shader", Shape::Triangle, boundaryX, boundaryY) {
+	: ActorModel(startingPosition, rotation, "res/textures/spaceshipNeu.bmp", "res/shaders/Basic.shader", "player", Shape::Triangle, boundaryX, boundaryY) {
 }
 
 PlayerModel::~PlayerModel() {

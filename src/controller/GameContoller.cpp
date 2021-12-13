@@ -32,10 +32,11 @@ void GameController::Loop() {
         else if (std::find(keyboardInput.begin(), keyboardInput.end(), "LEFT") != keyboardInput.end()) {
             this->model->RotatePlayerLeft();
         }
-
-        if (std::find(keyboardInput.begin(), keyboardInput.end(), "H") != keyboardInput.end()) {
+        
+        // test removing an actor
+        /*if (std::find(keyboardInput.begin(), keyboardInput.end(), "H") != keyboardInput.end()) {
             this->model->actors.erase(this->model->actors.rbegin()->first);
-        }
+        }*/
 
         for (auto& asteroid : this->model->asteroids) {
             asteroid->Move();
