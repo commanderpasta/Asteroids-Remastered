@@ -22,7 +22,10 @@ void GameController::Loop() {
 
         std::vector<std::string> keyboardInput = this->view.GetInput();
         if (std::find(keyboardInput.begin(), keyboardInput.end(), "FORWARD") != keyboardInput.end()) {
-            this->model->MovePlayerForward();
+            this->model->setPlayerAccelerating(true);
+        }
+        else {
+            this->model->setPlayerAccelerating(false);
         }
 
         if (std::find(keyboardInput.begin(), keyboardInput.end(), "RIGHT") != keyboardInput.end()) {
@@ -33,14 +36,11 @@ void GameController::Loop() {
             this->model->RotatePlayerLeft();
         }
         
-        // test removing an actor
-        /*if (std::find(keyboardInput.begin(), keyboardInput.end(), "H") != keyboardInput.end()) {
-            this->model->actors.erase(this->model->actors.rbegin()->first);
-        }*/
+        this->model->updatePositions();
 
-        for (auto& asteroid : this->model->asteroids) {
+        /*for (auto& asteroid : this->model->asteroids) {
             asteroid->Move();
-        }
+        }*/
         
         this->view.Update();
         this->view.Render();

@@ -89,6 +89,7 @@ void GameView::Render()  {
     //TODO: make map for actor lists with their id as key instead of going by array index
     unsigned int count = 0;
     for (auto& actor : this->actors) {
+        actor.second.data->texture.Bind();
         actor.second.shader.Bind();
         actor.second.data->va.Bind();
         actor.second.data->ib.Bind();

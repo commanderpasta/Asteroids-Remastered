@@ -4,12 +4,15 @@
 #include "PlayerModel.h"
 #include "AsteroidModel.h"
 
+#include "physics/Engine.h"
+
 #include <vector>
 #include <memory>
 #include <map>
 
 class GameModel {
 	std::shared_ptr<PlayerModel> player;
+	PhysicsEngine physicsEngine;
 public:
 	unsigned int windowX;
 	unsigned int windowY;
@@ -24,7 +27,9 @@ public:
 	void AddPlayer(float startingPosition[3], float rotation);
 	void AddAsteroid(float startingPosition[3]);
 
-	void MovePlayerForward();
+	void setPlayerAccelerating(bool isAccelerating);
 	void RotatePlayerRight();
 	void RotatePlayerLeft();
+
+	void updatePositions();
 };

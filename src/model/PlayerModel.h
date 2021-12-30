@@ -3,7 +3,7 @@
 
 class PlayerModel : public ActorModel {
 public:
-	PlayerModel(float startingPosition[3], float rotation, int boundaryX, int boundaryY);
+	PlayerModel(float startingPosition[3], float rotation);
 	~PlayerModel();
 
 	void MoveForward();
