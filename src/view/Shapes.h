@@ -2,9 +2,9 @@
 
 namespace TriangleShape {
     std::vector<float> positions = {
-        -15.0f, -15.0f, 0.0f, 0.0f,
-        15.0f, -15.0f, 1.0f, 0.0f,
-        0.0f, 30.0f, 0.5f, 1.0f
+        -10.0f, -10.0f, 0.0f, 0.0f,
+        10.0f, -10.0f, 1.0f, 0.0f,
+        0.0f, 20.0f, 0.5f, 1.0f
     };
 
     std::vector<unsigned int> indices = {

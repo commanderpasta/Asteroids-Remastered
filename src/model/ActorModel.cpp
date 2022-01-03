@@ -10,3 +10,6 @@ ActorModel::ActorModel(float startingPosition[3], float rotation, std::string te
 
 ActorModel::~ActorModel() {
 }
+
+void ActorModel::hasBeenHit() {
+}

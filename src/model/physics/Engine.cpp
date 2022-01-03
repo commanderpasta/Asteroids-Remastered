@@ -7,43 +7,34 @@ PhysicsEngine::PhysicsEngine(unsigned int boundaryX, unsigned int boundaryY)
 	: boundaryX(boundaryX), boundaryY(boundaryY) {}
 PhysicsEngine::~PhysicsEngine() {}
 
-PhysicsEngine::PhysicsObject::PhysicsObject(unsigned int id, float x, float y, float direction, float acceleration, bool doesDeaccelerate)
-	: id(id), x(x), y(y), doesDeaccelerate(doesDeaccelerate), direction(direction), acceleration(acceleration), xForce(0.0f), yForce(0.0f), rotation(0.0f) {}
+PhysicsEngine::PhysicsObject::PhysicsObject(unsigned int id, float x, float y, float direction, float acceleration, float radius, bool doesDeaccelerate)
+	: id(id), x(x), y(y), doesDeaccelerate(doesDeaccelerate), direction(direction), acceleration(acceleration), xForce(0.0f), yForce(0.0f), rotation(0.0f), collisionRadius(radius) {}
 PhysicsEngine::PhysicsObject::~PhysicsObject() {}
 
-void PhysicsEngine::addActor(unsigned int id, float x, float y, float direction, float acceleration) {
-	std::shared_ptr<PhysicsObject> newActor = std::make_shared<PhysicsObject>(id, x, y, direction, acceleration, false);
+//TODO have maxSpeed as parameter
+void PhysicsEngine::addActor(unsigned int id, float x, float y, float direction, float acceleration, float radius) {
+	std::shared_ptr<PhysicsObject> newActor = std::make_shared<PhysicsObject>(id, x, y, direction, acceleration, radius, false);
 	this->actorPhysicsObjects.emplace_back(newActor);
 }
 
-void PhysicsEngine::addPlayer(unsigned int id, float x, float y, float direction, float acceleration) {
-	this->player = std::make_shared<PhysicsObject>(id, x, y, direction, acceleration, true);
+void PhysicsEngine::addPlayer(unsigned int id, float x, float y, float direction, float acceleration, float radius) {
+	this->player = std::make_shared<PhysicsObject>(id, x, y, direction, acceleration, radius, true);
 	this->actorPhysicsObjects.emplace_back(this->player);
 }
 
 void PhysicsEngine::removeActor(unsigned int id) {
-	/*auto it = std::find_if(this->actorPhysicsObjects.begin(), this->actorPhysicsObjects.end(), [](PhysicsObject object) { return object.id; });
+	auto it = std::find_if(this->actorPhysicsObjects.begin(), this->actorPhysicsObjects.end(), [id](std::shared_ptr<PhysicsObject> object) { return object->id == id; });
 
 	if (it != this->actorPhysicsObjects.end()) { //object found
 		this->actorPhysicsObjects.erase(it);
 	} else {
 		std::cout << "PhysicsEngine: Actor with id " << id << " can not be found." << std::endl;
-	}*/
+	}
 }
-
-/*void PhysicsEngine::setPlayerDirection(float direction, bool isAccelerating) {
-	this->player->direction = direction;
-	if (isAccelerating) {
-		this->player->acceleration = 1.0f;
-	}
-	else {
-		this->player->acceleration = 0.0f;
-	}
-}*/
 
 void PhysicsEngine::setPlayerAccelerating(bool isAccelerating) {
 	if (isAccelerating) {
-		this->player->acceleration = 0.15f;
+		this->player->acceleration = 0.05f;
 	} else {
 		this->player->acceleration = 0.0f;
 	}
@@ -56,8 +47,8 @@ std::vector <std::tuple<unsigned int, float, float, float>> PhysicsEngine::updat
 	for (auto &actor : this->actorPhysicsObjects) {
 		if (actor->doesDeaccelerate) {
 			//apply "breaking" vector
-			actor->xForce -= actor->xForce * 0.01f;
-			actor->yForce -= actor->yForce * 0.01f;
+			actor->xForce -= actor->xForce * 0.005f;
+			actor->yForce -= actor->yForce * 0.005f;
 		}
 
 		//turn in direction
@@ -107,4 +98,23 @@ void PhysicsEngine::rotatePlayerRight() {
 	}
 
 	this->player->rotation = this->player->direction;
+}
+
+std::vector<std::pair<unsigned int, unsigned int>> PhysicsEngine::checkCollisions() {
+	std::vector<std::pair<unsigned int, unsigned int>> test;
+
+	for (auto& actor : this->actorPhysicsObjects) {
+		if (actor->id != this->player->id) {
+			auto dx = (this->player->x + this->player->collisionRadius) - (actor->x + actor->collisionRadius);
+			auto dy = (this->player->y + this->player->collisionRadius) - (actor->y + actor->collisionRadius);
+			auto distance = sqrt(dx * dx + dy * dy);
+
+			if (distance < (this->player->collisionRadius + actor->collisionRadius)) {
+				std::pair<unsigned int, unsigned int> collisionIds = { this->player->id, actor->id };
+				test.push_back(collisionIds);
+			}
+		}
+	}
+	
+	return test;
 }

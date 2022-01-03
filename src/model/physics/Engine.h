@@ -2,6 +2,7 @@
 
 #include <memory>
 #include <vector>
+#include <iostream>
 
 #define MY_PI 3.14159265358979323846
 #define DELTA 0.03f
@@ -16,6 +17,8 @@ class PhysicsEngine {
 		float direction;
 		float rotation;
 
+		float collisionRadius;
+
 		float acceleration;
 
 		bool doesDeaccelerate;
@@ -23,7 +26,7 @@ class PhysicsEngine {
 		float xForce;
 		float yForce;
 		unsigned int id;
-		PhysicsObject(unsigned int id, float x, float y, float direction, float acceleration, bool doesDeaccelerate);
+		PhysicsObject(unsigned int id, float x, float y, float direction, float acceleration, float radius, bool doesDeaccelerate);
 		~PhysicsObject();
 	};
 
@@ -36,8 +39,8 @@ private:
 public:
 	PhysicsEngine(unsigned int boundaryX, unsigned int boundaryY);
 	~PhysicsEngine();
-	void addActor(unsigned int id, float x, float y, float direction, float acceleration);
-	void addPlayer(unsigned int id, float x, float y, float direction, float acceleration);
+	void addActor(unsigned int id, float x, float y, float direction, float acceleration, float radius);
+	void addPlayer(unsigned int id, float x, float y, float direction, float acceleration, float radius);
 	void removeActor(unsigned int id);
 
 	//void setPlayerDirection(float direction, bool isAccelerating);
@@ -46,5 +49,5 @@ public:
 	void rotatePlayerRight();
 
 	std::vector <std::tuple<unsigned int, float, float, float>> updatePositions();
-	std::vector<unsigned int[2]> checkCollisions(); //returns pairs of ids with colliding objects
+	std::vector<std::pair<unsigned int, unsigned int>> checkCollisions(); //returns pairs of ids with colliding objects
 };

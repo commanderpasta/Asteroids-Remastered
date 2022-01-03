@@ -50,6 +50,9 @@ std::vector<std::string> GameView::GetInput() const {
     if (glfwGetKey(this->window, GLFW_KEY_W) == GLFW_PRESS) {
         keyboardEvents.push_back("FORWARD");
     }
+    if (glfwGetKey(this->window, GLFW_KEY_SPACE) == GLFW_PRESS) {
+        keyboardEvents.push_back("SPACE");
+    }
     if (glfwGetKey(this->window, GLFW_KEY_D) == GLFW_PRESS) {
         keyboardEvents.push_back("RIGHT");
     }
@@ -119,6 +122,10 @@ void GameView::Update() {
         this->actors.find(currentActorModel.first)->second.SetPosition(currentActorModel.second->position, currentActorModel.second->rotation);
     }
 }
+
+/*void GameView::erase(unsigned int id) {
+    auto actor = std::find_if(this->actors.begin(), this->actors.end(), [](std::shared_ptr<ActorView> actor) { return actor->id; });
+}*/
 
 void GameView::Clear() const {
     GLCall(glClear(GL_COLOR_BUFFER_BIT));

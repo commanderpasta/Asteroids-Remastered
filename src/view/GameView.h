@@ -26,6 +26,7 @@ public:
 	void Clear() const;
 	void Render();
 	void Update();
+	//void erase(unsigned int id);
 
 	void AddActor(Shape shape, std::string& shaderPath, std::string& texturePath, std::string& type, unsigned int id);
 

@@ -16,4 +16,6 @@ public:
 
 	ActorModel(float startingPosition[3], float rotation, std::string texturePath, std::string shaderPath, std::string type, Shape shape);
 	~ActorModel();
+
+	virtual void hasBeenHit();
 };

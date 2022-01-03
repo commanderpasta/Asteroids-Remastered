@@ -3,6 +3,7 @@
 #include "ActorModel.h"
 #include "PlayerModel.h"
 #include "AsteroidModel.h"
+#include "ProjectileModel.h"
 
 #include "physics/Engine.h"
 
@@ -30,6 +31,8 @@ public:
 	void setPlayerAccelerating(bool isAccelerating);
 	void RotatePlayerRight();
 	void RotatePlayerLeft();
+	void fireProjectile();
 
 	void updatePositions();
+	void checkCollisions();
 };

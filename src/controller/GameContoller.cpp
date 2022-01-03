@@ -14,6 +14,7 @@ void GameController::Setup() {
 
 void GameController::Loop() {
     this->model->Setup();
+    std::chrono::steady_clock::time_point projectileCooldown = std::chrono::steady_clock::now() - std::chrono::seconds(1);
 
     while (!view.ShouldWindowClose())
     {
@@ -28,6 +29,17 @@ void GameController::Loop() {
             this->model->setPlayerAccelerating(false);
         }
 
+        if (std::find(keyboardInput.begin(), keyboardInput.end(), "SPACE") != keyboardInput.end()) {
+            using namespace std::chrono;
+            steady_clock::time_point currentTime = steady_clock::now();
+
+            duration<double> timeSpan = duration_cast<duration<double>>(currentTime - projectileCooldown);
+            if (timeSpan.count() > 0.25) {
+                projectileCooldown = currentTime;
+                this->model->fireProjectile();
+            }
+        }
+
         if (std::find(keyboardInput.begin(), keyboardInput.end(), "RIGHT") != keyboardInput.end()) {
             this->model->RotatePlayerRight();
         }
@@ -37,10 +49,7 @@ void GameController::Loop() {
         }
         
         this->model->updatePositions();
-
-        /*for (auto& asteroid : this->model->asteroids) {
-            asteroid->Move();
-        }*/
+        this->model->checkCollisions();
         
         this->view.Update();
         this->view.Render();

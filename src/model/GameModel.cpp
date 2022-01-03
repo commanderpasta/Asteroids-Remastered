@@ -10,7 +10,17 @@ void GameModel::AddPlayer(float startingPosition[3], float rotation) {
 	this->actors.insert({playerModel->id, playerModel});
 	this->player = playerModel;
 
-	this->physicsEngine.addPlayer(playerModel->id, playerModel->position[0], playerModel->position[1], 0.0f, 0.0f);
+	this->physicsEngine.addPlayer(playerModel->id, playerModel->position[0], playerModel->position[1], 0.0f, 0.0f, playerModel->radius);
+}
+
+float getRandomFloat(float min, float max)
+{
+	float random = ((float)rand()) / (float)RAND_MAX;
+
+	// generate (in your case) a float between 0 and (4.5-.78)
+	// then add .78, giving you a float between .78 and 4.5
+	float range = max - min;
+	return (random * range) + min;
 }
 
 void GameModel::AddAsteroid(float startingPosition[3]) {
@@ -18,11 +28,18 @@ void GameModel::AddAsteroid(float startingPosition[3]) {
 	this->actors.insert({asteroidModel->id, asteroidModel});
 	this->asteroids.push_back(asteroidModel);
 
-	this->physicsEngine.addActor(asteroidModel->id, asteroidModel->position[0], asteroidModel->position[1], asteroidModel->direction, 0.002f);
+	this->physicsEngine.addActor(asteroidModel->id, asteroidModel->position[0], asteroidModel->position[1], getRandomFloat(0.0f, 2 * MY_PI), 0.002f, asteroidModel->radius);
 }
 
 void GameModel::setPlayerAccelerating(bool isAccelerating) {
 	this->physicsEngine.setPlayerAccelerating(isAccelerating);
+}
+
+void GameModel::fireProjectile() {
+	std::shared_ptr<ProjectileModel> projectileModel = std::make_shared<ProjectileModel>(this->player->position);
+	this->actors.insert({ projectileModel->id, projectileModel });
+
+	this->physicsEngine.addActor(projectileModel->id, projectileModel->position[0], projectileModel->position[1], this->player->rotation, 0.006f, projectileModel->radius);
 }
 
 void GameModel::RotatePlayerLeft() {
@@ -59,5 +76,24 @@ void GameModel::updatePositions() {
 			peter->second->rotation = std::get<3>(testt);
 
 		}
+	}
+}
+
+void GameModel::checkCollisions() {
+	auto test = this->physicsEngine.checkCollisions();
+
+	for (auto& collisionPairIds : test) {
+		/*if (this->actors.count(collisionPairIds.first) == 1) {
+			//this->actors[collisionPairIds.first]->hasBeenHit();
+			//this->actors.erase(collisionPairIds.first);
+			//this->physicsEngine.removeActor(collisionPairIds.first);
+		}
+
+		if (this->actors.count(collisionPairIds.second) == 1) {
+			//this->actors[collisionPairIds.second]->hasBeenHit();
+
+			this->actors.erase(collisionPairIds.second);
+			this->physicsEngine.removeActor(collisionPairIds.second);
+		}*/
 	}
 }
