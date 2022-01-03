@@ -1,8 +1,13 @@
 #include "GameModel.h"
 
-GameModel::GameModel(unsigned int windowX, unsigned int windowY) : windowX(windowX), windowY(windowY), physicsEngine(windowX, windowY) {
+GameModel::GameModel(unsigned int windowX, unsigned int windowY) 
+	: windowX(windowX), windowY(windowY), physicsEngine(windowX, windowY), projectileCooldown(std::chrono::steady_clock::now() - std::chrono::seconds(1)) {
 }
 GameModel::~GameModel() {
+}
+
+void GameModel::setCurrentTime() {
+	this->currentTime = steady_clock::now();
 }
 
 void GameModel::AddPlayer(float startingPosition[3], float rotation) {
@@ -10,7 +15,7 @@ void GameModel::AddPlayer(float startingPosition[3], float rotation) {
 	this->actors.insert({playerModel->id, playerModel});
 	this->player = playerModel;
 
-	this->physicsEngine.addPlayer(playerModel->id, playerModel->position[0], playerModel->position[1], 0.0f, 0.0f, playerModel->radius);
+	this->physicsEngine.addPlayer(playerModel->id, playerModel->position[0], playerModel->position[1], 0.0f, 0.0f, 0.995f, 0.0f, 3.0f, playerModel->radius);
 }
 
 float getRandomFloat(float min, float max)
@@ -28,7 +33,7 @@ void GameModel::AddAsteroid(float startingPosition[3]) {
 	this->actors.insert({asteroidModel->id, asteroidModel});
 	this->asteroids.push_back(asteroidModel);
 
-	this->physicsEngine.addActor(asteroidModel->id, asteroidModel->position[0], asteroidModel->position[1], getRandomFloat(0.0f, 2 * MY_PI), 0.002f, asteroidModel->radius);
+	this->physicsEngine.addActor(asteroidModel->id, asteroidModel->position[0], asteroidModel->position[1], getRandomFloat(0.0f, 2 * MY_PI), 0.0f, 1.0f, 1.5f, 1.5f, asteroidModel->radius, false);
 }
 
 void GameModel::setPlayerAccelerating(bool isAccelerating) {
@@ -36,10 +41,51 @@ void GameModel::setPlayerAccelerating(bool isAccelerating) {
 }
 
 void GameModel::fireProjectile() {
-	std::shared_ptr<ProjectileModel> projectileModel = std::make_shared<ProjectileModel>(this->player->position);
-	this->actors.insert({ projectileModel->id, projectileModel });
+	if (!this->player) {
+		return;
+	}
+	                           
+	duration<double> timeSpan = duration_cast<duration<double>>(currentTime - this->projectileCooldown);
+	if (timeSpan.count() > 0.25 && this->projectiles.size() < 4) {
+		this->projectileCooldown = currentTime;
 
-	this->physicsEngine.addActor(projectileModel->id, projectileModel->position[0], projectileModel->position[1], this->player->rotation, 0.006f, projectileModel->radius);
+		std::shared_ptr<ProjectileModel> projectileModel = std::make_shared<ProjectileModel>(this->player->position, currentTime);
+		this->actors.insert({ projectileModel->id, projectileModel });
+		this->projectiles.push_back(projectileModel);
+
+		this->physicsEngine.addActor(projectileModel->id, projectileModel->position[0], projectileModel->position[1], this->player->rotation, 0.000f, 1.0f, 6.0f, 6.0f, projectileModel->radius, true);
+	}
+}
+
+void GameModel::removeActor(unsigned int id) {
+	auto actor = this->actors.find(id);
+	
+	if (actor != this->actors.end()) {
+		if (actor->second->type == "projectile") {
+			auto it = std::find_if(this->projectiles.begin(), this->projectiles.end(), [id](std::shared_ptr<ProjectileModel> object) { return object->id == id; });
+
+			if (it != this->projectiles.end()) {
+				this->projectiles.erase(it);
+			}
+		}
+		else if (actor->second->type == "asteroid") {
+			auto it = std::find_if(this->asteroids.begin(), this->asteroids.end(), [id](std::shared_ptr<AsteroidModel> object) { return object->id == id; });
+
+			if (it != this->asteroids.end()) {
+				this->asteroids.erase(it);
+			}
+		}
+		else if (actor->second->type == "player") {
+			this->player.reset();
+			this->lastPlayerDeath = this->currentTime;
+		}
+
+		this->physicsEngine.removeActor(id);
+		this->actors.erase(id);
+	}
+	else {
+		std::cout << "Could not remove actor with id " << id << "." << std::endl;
+	}
 }
 
 void GameModel::RotatePlayerLeft() {
@@ -59,6 +105,19 @@ void GameModel::Setup() {
 	for (int i = 0; i < 5; i++) {
 		float initialAsteroidPosition[3] = { rand() % 700, rand() % 300, 0.0f };
 		this->AddAsteroid(initialAsteroidPosition);
+	}
+}
+
+void GameModel::checkPlayerDeath() {
+	if (this->player) {
+		return;
+	}
+
+	duration<double> timeSpan = duration_cast<duration<double>>(this->currentTime - this->lastPlayerDeath);
+
+	if (timeSpan.count() > 3.0) {
+		float startingPosition[3] = { this->windowX/2.0f, this->windowY/2.0f, 0.0f };
+		this->AddPlayer(startingPosition, 0.0f);
 	}
 }
 
@@ -83,17 +142,32 @@ void GameModel::checkCollisions() {
 	auto test = this->physicsEngine.checkCollisions();
 
 	for (auto& collisionPairIds : test) {
-		/*if (this->actors.count(collisionPairIds.first) == 1) {
-			//this->actors[collisionPairIds.first]->hasBeenHit();
-			//this->actors.erase(collisionPairIds.first);
-			//this->physicsEngine.removeActor(collisionPairIds.first);
+		if (this->actors.count(collisionPairIds.first) == 1 && this->actors.count(collisionPairIds.second) == 1) {
+			if ((this->actors[collisionPairIds.first]->id == this->player->id && this->actors[collisionPairIds.second]->type == "projectile") || 
+				(this->actors[collisionPairIds.second]->id == this->player->id && this->actors[collisionPairIds.first]->type == "projectile")) {
+				continue;
+			}
+
+			this->actors[collisionPairIds.first]->hasBeenHit();
+			this->actors[collisionPairIds.second]->hasBeenHit();
+
+			this->removeActor(collisionPairIds.first);
+			this->removeActor(collisionPairIds.second);
 		}
+	}
+}
 
-		if (this->actors.count(collisionPairIds.second) == 1) {
-			//this->actors[collisionPairIds.second]->hasBeenHit();
+void GameModel::checkProjectileLifetimes() {
+	std::vector<unsigned int> idsToRemove;
+	for (auto& projectile : this->projectiles) {
+		duration<double> timeSpan = duration_cast<duration<double>>(this->currentTime - projectile->timeOfSpawn);
 
-			this->actors.erase(collisionPairIds.second);
-			this->physicsEngine.removeActor(collisionPairIds.second);
-		}*/
+		if (timeSpan.count() > 2.0) {
+			idsToRemove.push_back(projectile->id);
+		}
+	}
+
+	for (unsigned int id : idsToRemove) {
+		this->removeActor(id);
 	}
 }

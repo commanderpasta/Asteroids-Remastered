@@ -1,3 +1,3 @@
 #pragma once
 
-enum class Shape { Triangle, Circle, Quad };
+enum class Shape { Triangle, Circle, Quad, Quad2 };

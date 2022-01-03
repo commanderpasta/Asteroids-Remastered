@@ -20,27 +20,29 @@ class PhysicsEngine {
 		float collisionRadius;
 
 		float acceleration;
+		float deacceleration;
 
-		bool doesDeaccelerate;
+		float maxSpeed;
 		
 		float xForce;
 		float yForce;
 		unsigned int id;
-		PhysicsObject(unsigned int id, float x, float y, float direction, float acceleration, float radius, bool doesDeaccelerate);
+		PhysicsObject(unsigned int id, float x, float y, float direction, float acceleration, float deacceleration, float startingSpeed, float maxSpeed, float hitboxRadius);
 		~PhysicsObject();
 	};
 
-private: 
-	std::vector<std::shared_ptr<PhysicsObject>> actorPhysicsObjects;
+private:
 	std::shared_ptr<PhysicsObject> player;
+	std::vector<std::shared_ptr<PhysicsObject>> actorPhysicsObjects;
+	std::vector<std::shared_ptr<PhysicsObject>> actorsWithHitboxRegistration;
 
 	unsigned int boundaryX;
 	unsigned int boundaryY;
 public:
 	PhysicsEngine(unsigned int boundaryX, unsigned int boundaryY);
 	~PhysicsEngine();
-	void addActor(unsigned int id, float x, float y, float direction, float acceleration, float radius);
-	void addPlayer(unsigned int id, float x, float y, float direction, float acceleration, float radius);
+	void addActor(unsigned int id, float x, float y, float direction, float acceleration, float deacceleration, float startingSpeed, float maxSpeed, float hitboxRadius, bool hasHitboxRegistration);
+	void addPlayer(unsigned int id, float x, float y, float direction, float acceleration, float deacceleration, float startingSpeed, float maxSpeed, float hitboxRadius);
 	void removeActor(unsigned int id);
 
 	//void setPlayerDirection(float direction, bool isAccelerating);

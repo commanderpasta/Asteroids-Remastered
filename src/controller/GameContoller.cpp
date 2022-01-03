@@ -1,5 +1,6 @@
 #include "GameController.h"
 
+
 GameController::GameController(std::shared_ptr<GameModel> model)
     : view(model) {
 
@@ -14,12 +15,16 @@ void GameController::Setup() {
 
 void GameController::Loop() {
     this->model->Setup();
-    std::chrono::steady_clock::time_point projectileCooldown = std::chrono::steady_clock::now() - std::chrono::seconds(1);
 
     while (!view.ShouldWindowClose())
     {
         // Render here
         this->view.Clear();
+
+        this->model->setCurrentTime();
+        this->model->checkProjectileLifetimes();
+
+        this->model->checkPlayerDeath();
 
         std::vector<std::string> keyboardInput = this->view.GetInput();
         if (std::find(keyboardInput.begin(), keyboardInput.end(), "FORWARD") != keyboardInput.end()) {
@@ -30,14 +35,7 @@ void GameController::Loop() {
         }
 
         if (std::find(keyboardInput.begin(), keyboardInput.end(), "SPACE") != keyboardInput.end()) {
-            using namespace std::chrono;
-            steady_clock::time_point currentTime = steady_clock::now();
-
-            duration<double> timeSpan = duration_cast<duration<double>>(currentTime - projectileCooldown);
-            if (timeSpan.count() > 0.25) {
-                projectileCooldown = currentTime;
-                this->model->fireProjectile();
-            }
+            this->model->fireProjectile();
         }
 
         if (std::find(keyboardInput.begin(), keyboardInput.end(), "RIGHT") != keyboardInput.end()) {

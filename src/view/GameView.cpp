@@ -85,6 +85,13 @@ void GameView::AddActor(Shape shape, std::string& shaderPath, std::string& textu
             ActorView newActor(newActorType, shaderPath, id);
             this->actors.insert({ id, std::move(newActor) });
         }
+        else if (shape == Shape::Quad2) {
+            std::shared_ptr<ActorDataView> newActorType = std::make_shared<ActorDataView>(Quad2Shape::indices.data(), Quad2Shape::positions.data(), 8, Quad2Shape::positions.size(), texturePath);
+            this->actorTypes.insert({ type, newActorType });
+
+            ActorView newActor(newActorType, shaderPath, id);
+            this->actors.insert({ id, std::move(newActor) });
+        }
     }
 }
 
@@ -122,10 +129,6 @@ void GameView::Update() {
         this->actors.find(currentActorModel.first)->second.SetPosition(currentActorModel.second->position, currentActorModel.second->rotation);
     }
 }
-
-/*void GameView::erase(unsigned int id) {
-    auto actor = std::find_if(this->actors.begin(), this->actors.end(), [](std::shared_ptr<ActorView> actor) { return actor->id; });
-}*/
 
 void GameView::Clear() const {
     GLCall(glClear(GL_COLOR_BUFFER_BIT));

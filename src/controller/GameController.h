@@ -2,9 +2,6 @@
 
 #include "../view/GameView.h"
 
-#include <chrono>
-
-
 class GameController {
 public:
     std::shared_ptr<GameModel> model;

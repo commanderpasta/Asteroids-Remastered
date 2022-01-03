@@ -7,19 +7,22 @@ PhysicsEngine::PhysicsEngine(unsigned int boundaryX, unsigned int boundaryY)
 	: boundaryX(boundaryX), boundaryY(boundaryY) {}
 PhysicsEngine::~PhysicsEngine() {}
 
-PhysicsEngine::PhysicsObject::PhysicsObject(unsigned int id, float x, float y, float direction, float acceleration, float radius, bool doesDeaccelerate)
-	: id(id), x(x), y(y), doesDeaccelerate(doesDeaccelerate), direction(direction), acceleration(acceleration), xForce(0.0f), yForce(0.0f), rotation(0.0f), collisionRadius(radius) {}
+PhysicsEngine::PhysicsObject::PhysicsObject(unsigned int id, float x, float y, float direction, float acceleration, float deacceleration, float startingSpeed, float maxSpeed, float hitboxRadius)
+	: id(id), x(x), y(y), direction(direction), acceleration(acceleration), deacceleration(deacceleration), maxSpeed(maxSpeed), xForce(startingSpeed * sin(direction)), yForce(startingSpeed * cos(direction)), rotation(0.0f), collisionRadius(hitboxRadius) {}
 PhysicsEngine::PhysicsObject::~PhysicsObject() {}
 
-//TODO have maxSpeed as parameter
-void PhysicsEngine::addActor(unsigned int id, float x, float y, float direction, float acceleration, float radius) {
-	std::shared_ptr<PhysicsObject> newActor = std::make_shared<PhysicsObject>(id, x, y, direction, acceleration, radius, false);
+void PhysicsEngine::addActor(unsigned int id, float x, float y, float direction, float acceleration, float deacceleration, float startingSpeed, float maxSpeed, float hitboxRadius, bool hasHitboxRegistration) {
+	std::shared_ptr<PhysicsObject> newActor = std::make_shared<PhysicsObject>(id, x, y, direction, acceleration, deacceleration, startingSpeed, maxSpeed, hitboxRadius);
 	this->actorPhysicsObjects.emplace_back(newActor);
+	if (hasHitboxRegistration) {
+		this->actorsWithHitboxRegistration.emplace_back(newActor);
+	}
 }
 
-void PhysicsEngine::addPlayer(unsigned int id, float x, float y, float direction, float acceleration, float radius) {
-	this->player = std::make_shared<PhysicsObject>(id, x, y, direction, acceleration, radius, true);
+void PhysicsEngine::addPlayer(unsigned int id, float x, float y, float direction, float acceleration, float deacceleration, float startingSpeed, float maxSpeed, float hitboxRadius) {
+	this->player = std::make_shared<PhysicsObject>(id, x, y, direction, acceleration, deacceleration, startingSpeed, maxSpeed, hitboxRadius);
 	this->actorPhysicsObjects.emplace_back(this->player);
+	this->actorsWithHitboxRegistration.emplace_back(this->player);
 }
 
 void PhysicsEngine::removeActor(unsigned int id) {
@@ -27,6 +30,12 @@ void PhysicsEngine::removeActor(unsigned int id) {
 
 	if (it != this->actorPhysicsObjects.end()) { //object found
 		this->actorPhysicsObjects.erase(it);
+
+		auto it2 = std::find_if(this->actorsWithHitboxRegistration.begin(), this->actorsWithHitboxRegistration.end(), [id](std::shared_ptr<PhysicsObject> object) { return object->id == id; });
+
+		if (it2 != this->actorsWithHitboxRegistration.end()) {
+			this->actorsWithHitboxRegistration.erase(it2);
+		}
 	} else {
 		std::cout << "PhysicsEngine: Actor with id " << id << " can not be found." << std::endl;
 	}
@@ -45,15 +54,15 @@ std::vector <std::tuple<unsigned int, float, float, float>> PhysicsEngine::updat
 	std::vector <std::tuple<unsigned int, float, float, float>> bla;
 
 	for (auto &actor : this->actorPhysicsObjects) {
-		if (actor->doesDeaccelerate) {
+		if (actor->deacceleration < 1.0f) {
 			//apply "breaking" vector
-			actor->xForce -= actor->xForce * 0.005f;
-			actor->yForce -= actor->yForce * 0.005f;
+			actor->xForce *= actor->deacceleration; //player = 0.005f
+			actor->yForce *= actor->deacceleration;
 		}
 
 		//turn in direction
-		actor->xForce = std::min(3.0f, actor->xForce + actor->acceleration * sin(actor->direction));
-		actor->yForce = std::min(3.0f, actor->yForce + actor->acceleration * cos(actor->direction));
+		actor->xForce = std::min(actor->maxSpeed, actor->xForce + actor->acceleration * sin(actor->direction)); //3.0f before
+		actor->yForce = std::min(actor->maxSpeed, actor->yForce + actor->acceleration * cos(actor->direction));
 
 		//add calculated vector to position
 		actor->x += actor->xForce;
@@ -105,13 +114,17 @@ std::vector<std::pair<unsigned int, unsigned int>> PhysicsEngine::checkCollision
 
 	for (auto& actor : this->actorPhysicsObjects) {
 		if (actor->id != this->player->id) {
-			auto dx = (this->player->x + this->player->collisionRadius) - (actor->x + actor->collisionRadius);
-			auto dy = (this->player->y + this->player->collisionRadius) - (actor->y + actor->collisionRadius);
-			auto distance = sqrt(dx * dx + dy * dy);
+			for (auto& actorWithHitboxRegistration : this->actorsWithHitboxRegistration) {
+				if (actor->id != actorWithHitboxRegistration->id) {
+					auto dx = (actorWithHitboxRegistration->x + actorWithHitboxRegistration->collisionRadius) - (actor->x + actor->collisionRadius);
+					auto dy = (actorWithHitboxRegistration->y + actorWithHitboxRegistration->collisionRadius) - (actor->y + actor->collisionRadius);
+					auto distance = sqrt(dx * dx + dy * dy);
 
-			if (distance < (this->player->collisionRadius + actor->collisionRadius)) {
-				std::pair<unsigned int, unsigned int> collisionIds = { this->player->id, actor->id };
-				test.push_back(collisionIds);
+					if (distance < (actorWithHitboxRegistration->collisionRadius + actor->collisionRadius)) {
+						std::pair<unsigned int, unsigned int> collisionIds = { actorWithHitboxRegistration->id, actor->id };
+						test.push_back(collisionIds);
+					}
+				}
 			}
 		}
 	}
