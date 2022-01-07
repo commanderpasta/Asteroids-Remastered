@@ -7,6 +7,8 @@
 #define MY_PI 3.14159265358979323846
 #define DELTA 0.03f
 
+enum class AccelerationType { Linear, None };
+
 class PhysicsEngine {
 	class PhysicsObject {
 	public:
@@ -19,15 +21,18 @@ class PhysicsEngine {
 
 		float collisionRadius;
 
-		float acceleration;
+		float deltaVelocity;
 		float deacceleration;
 
+		float currentSpeed;
 		float maxSpeed;
 		
-		float xForce;
-		float yForce;
+		float velocityX;
+		float velocityY;
 		unsigned int id;
-		PhysicsObject(unsigned int id, float x, float y, float direction, float acceleration, float deacceleration, float startingSpeed, float maxSpeed, float hitboxRadius);
+
+		AccelerationType accelerationType;
+		PhysicsObject(unsigned int id, float x, float y, float direction, float acceleration, float deacceleration, float startingSpeed, float maxSpeed, float hitboxRadius, AccelerationType accelerationType);
 		~PhysicsObject();
 	};
 
@@ -41,12 +46,13 @@ private:
 public:
 	PhysicsEngine(unsigned int boundaryX, unsigned int boundaryY);
 	~PhysicsEngine();
-	void addActor(unsigned int id, float x, float y, float direction, float acceleration, float deacceleration, float startingSpeed, float maxSpeed, float hitboxRadius, bool hasHitboxRegistration);
+	void addActor(unsigned int id, float x, float y, float direction, float acceleration, float deacceleration, float startingSpeed, float maxSpeed, float hitboxRadius, bool hasHitboxRegistration, AccelerationType accelerationType);
 	void addPlayer(unsigned int id, float x, float y, float direction, float acceleration, float deacceleration, float startingSpeed, float maxSpeed, float hitboxRadius);
 	void removeActor(unsigned int id);
 
-	//void setPlayerDirection(float direction, bool isAccelerating);
-	void setPlayerAccelerating(bool isAccelerating);
+	void setDirection(unsigned int id, float directionInRad);
+	void setAcceleration(unsigned int id, float acceleration);
+
 	void rotatePlayerLeft();
 	void rotatePlayerRight();
 
