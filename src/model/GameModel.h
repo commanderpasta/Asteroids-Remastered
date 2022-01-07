@@ -3,7 +3,12 @@
 #include "ActorModel.h"
 #include "PlayerModel.h"
 #include "AsteroidModel.h"
+#include "MediumAsteroidModel.h"
+#include "SmallAsteroidModel.h"
 #include "ProjectileModel.h"
+#include "BaseShipModel.h"
+#include "SmallShipModel.h"
+#include "LargeShipModel.h"
 
 #include "physics/Engine.h"
 
@@ -11,11 +16,14 @@
 #include <memory>
 #include <map>
 #include <chrono>
+#include <random>
+#include <functional>
 
 using namespace std::chrono;
 
 class GameModel {
 	std::shared_ptr<PlayerModel> player;
+	std::shared_ptr<BaseShipModel> ship;
 	PhysicsEngine physicsEngine;
 	
 	steady_clock::time_point currentTime;
@@ -25,6 +33,8 @@ public:
 	unsigned int windowX;
 	unsigned int windowY;
 	std::vector<std::shared_ptr<AsteroidModel>> asteroids;
+	std::vector<std::shared_ptr<MediumAsteroidModel>> mediumAsteroids;
+	std::vector<std::shared_ptr<SmallAsteroidModel>> smallAsteroids;
 	std::vector<std::shared_ptr<ProjectileModel>> projectiles;
 	std::map<unsigned int, std::shared_ptr<ActorModel>> actors;
 
@@ -36,6 +46,11 @@ public:
 
 	void AddPlayer(float startingPosition[3], float rotation);
 	void AddAsteroid(float startingPosition[3]);
+	void addMediumAsteroid(float startingPosition[3]);
+	void addSmallAsteroid(float startingPosition[3]);
+	void addSmallShip();
+	void addLargeShip();
+
 	void removeActor(unsigned int id);
 
 	void setPlayerAccelerating(bool isAccelerating);
@@ -46,6 +61,7 @@ public:
 	void updatePositions();
 	void checkCollisions();
 	void checkProjectileLifetimes();
+	void setShipDirection();
 
 	void checkPlayerDeath();
 };

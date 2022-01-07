@@ -23,6 +23,7 @@ void GameController::Loop() {
 
         this->model->setCurrentTime();
         this->model->checkProjectileLifetimes();
+        this->model->setShipDirection();
 
         this->model->checkPlayerDeath();
 
