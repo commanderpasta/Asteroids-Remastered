@@ -2,7 +2,7 @@
 
 float BaseShipModel::radius = 20.0f;
 BaseShipModel::BaseShipModel(float startingPosition[3], steady_clock::time_point timeOfSpawn, bool isDirectionLeft)
-	: ActorModel(startingPosition, 0, "res/textures/spaceshipNeu.bmp", "res/shaders/Basic.shader", "ship", Shape::Quad), lastChangeOfDirection(timeOfSpawn) {
+	: ActorModel(startingPosition, 0, ActorType::ShipLarge) {
 	if (isDirectionLeft) {
 		this->movingState = MovingState::Left;
 	} else {

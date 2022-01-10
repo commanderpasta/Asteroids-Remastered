@@ -5,8 +5,8 @@
 
 #include "GameController.h"
 
-#define WINDOW_X 960
-#define WINDOW_Y 540
+#define WINDOW_X 1024
+#define WINDOW_Y 768
 
 int main(void) {
     std::shared_ptr<GameModel> model_ptr = std::make_shared<GameModel>(WINDOW_X, WINDOW_Y);

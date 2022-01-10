@@ -115,13 +115,13 @@ void GameModel::removeActor(unsigned int id) {
 	auto actor = this->actors.find(id);
 	
 	if (actor != this->actors.end()) {
-		if (actor->second->type == "projectile") {
+		if (actor->second->actorType == ActorType::Projectile) {
 			auto it = std::find_if(this->projectiles.begin(), this->projectiles.end(), [id](std::shared_ptr<ProjectileModel> object) { return object->id == id; });
 
 			if (it != this->projectiles.end()) {
 				this->projectiles.erase(it);
 			}
-		} else if (actor->second->type == "asteroid") {
+		} else if (actor->second->actorType == ActorType::AsteroidLarge) {
 			auto it = std::find_if(this->asteroids.begin(), this->asteroids.end(), [id](std::shared_ptr<AsteroidModel> object) { return object->id == id; });
 
 			if (it != this->asteroids.end()) {
@@ -130,7 +130,7 @@ void GameModel::removeActor(unsigned int id) {
 				this->addMediumAsteroid(startingPosition);
 				this->addMediumAsteroid(startingPosition);
 			}
-		} else if (actor->second->type == "mediumAsteroid") {
+		} else if (actor->second->actorType == ActorType::AsteroidMedium) {
 			auto it = std::find_if(this->mediumAsteroids.begin(), this->mediumAsteroids.end(), [id](std::shared_ptr<MediumAsteroidModel> object) { return object->id == id; });
 
 			if (it != this->mediumAsteroids.end()) {
@@ -139,14 +139,14 @@ void GameModel::removeActor(unsigned int id) {
 				this->addSmallAsteroid(startingPosition);
 				this->addSmallAsteroid(startingPosition);
 			}
-		} else if (actor->second->type == "smallAsteroid") {
+		} else if (actor->second->actorType == ActorType::AsteroidSmall) {
 			auto it = std::find_if(this->smallAsteroids.begin(), this->smallAsteroids.end(), [id](std::shared_ptr<SmallAsteroidModel> object) { return object->id == id; });
 			if (it != this->smallAsteroids.end()) {
 				this->smallAsteroids.erase(it);
 			}
-		} else if (actor->second->type == "ship") {
+		} else if (actor->second->actorType == ActorType::ShipLarge) {
 			this->ship.reset();
-		} else if (actor->second->type == "player") {
+		} else if (actor->second->actorType == ActorType::Player) {
 			this->player.reset();
 			this->lastPlayerDeath = this->currentTime;
 		}
@@ -219,12 +219,11 @@ void GameModel::checkCollisions() {
 	for (auto& collisionPairIds : test) {
 		if (this->actors.count(collisionPairIds.first) == 1 && this->actors.count(collisionPairIds.second) == 1) {
 			if (this->player != nullptr) { //keep checking collisions while player is dead but avoid nullptr exception
-				if ((this->actors[collisionPairIds.first]->id == this->player->id && this->actors[collisionPairIds.second]->type == "projectile") ||
-					(this->actors[collisionPairIds.second]->id == this->player->id && this->actors[collisionPairIds.first]->type == "projectile")) {
+				if ((this->actors[collisionPairIds.first]->id == this->player->id && this->actors[collisionPairIds.second]->actorType == ActorType::Projectile) ||
+					(this->actors[collisionPairIds.second]->id == this->player->id && this->actors[collisionPairIds.first]->actorType == ActorType::Projectile)) {
 					continue;
 				}
 			}
-
 
 			this->actors[collisionPairIds.first]->hasBeenHit();
 			this->actors[collisionPairIds.second]->hasBeenHit();

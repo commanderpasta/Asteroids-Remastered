@@ -3,7 +3,7 @@
 float PlayerModel::radius = 10.0f;
 
 PlayerModel::PlayerModel(float startingPosition[3], float rotation)
-	: ActorModel(startingPosition, rotation, "res/textures/spaceshipNeu.bmp", "res/shaders/Basic.shader", "player", Shape::Triangle) {
+	: ActorModel(startingPosition, rotation, ActorType::Player) {
 }
 
 PlayerModel::~PlayerModel() {

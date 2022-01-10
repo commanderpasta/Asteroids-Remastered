@@ -48,7 +48,7 @@ public:
 	void AddAsteroid(float startingPosition[3]);
 	void addMediumAsteroid(float startingPosition[3]);
 	void addSmallAsteroid(float startingPosition[3]);
-	void addSmallShip();
+	//void addSmallShip();
 	void addLargeShip();
 
 	void removeActor(unsigned int id);

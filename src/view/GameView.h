@@ -15,7 +15,7 @@
 class GameView {
 	GLFWwindow *window;
 	std::shared_ptr<GameModel> model;
-	std::map<std::string, std::shared_ptr<ActorDataView>> actorTypes;
+	std::map<ActorType, std::shared_ptr<ActorDataView>> actorDataPerType;
 	std::map<unsigned int, ActorView> actors;
 public:
 	GameView(std::shared_ptr<GameModel> model); //todo: pass 'opengl' or 'sdl' and init renderer-object accordingly
@@ -26,9 +26,11 @@ public:
 	void Clear() const;
 	void Render();
 	void Update();
+	void updateResolution();
+	void checkWindowResize();
 	//void erase(unsigned int id);
 
-	void AddActor(Shape shape, std::string& shaderPath, std::string& texturePath, std::string& type, unsigned int id);
+	void AddActor(unsigned int id, ActorType actorType);
 
 	std::vector<std::string> GetInput() const;
 };

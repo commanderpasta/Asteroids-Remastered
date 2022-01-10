@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Shapes.h"
+#include "ActorTypes.h"
 
 #include <string>
 
@@ -9,12 +9,9 @@ public:
 	unsigned int id;
 	float position[3];
 	float rotation;
-	std::string texturePath;
-	std::string shaderPath;
-	Shape shape;
-	std::string type;
+	ActorType actorType;
 
-	ActorModel(float startingPosition[3], float rotation, std::string texturePath, std::string shaderPath, std::string type, Shape shape);
+	ActorModel(float startingPosition[3], float rotation, ActorType actorType);
 	~ActorModel();
 
 	virtual void hasBeenHit();

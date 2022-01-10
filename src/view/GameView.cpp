@@ -1,5 +1,4 @@
 #include "GameView.h"
-#include "Shapes.h"
 
 #include <iostream>
 
@@ -7,7 +6,7 @@ GameView::GameView(std::shared_ptr<GameModel> model) : model(model), window(null
     /* Initialize the library */
     glfwInit();
 
-    this->window = glfwCreateWindow(this->model->windowX, this->model->windowY, "Asteroids: Remastered", NULL, NULL);
+    this->window = glfwCreateWindow(this->model->windowX, this->model->windowY, "Asteroids: Remastered", glfwGetPrimaryMonitor(), NULL);
 
     if (!this->window)
     {
@@ -33,6 +32,25 @@ GameView::GameView(std::shared_ptr<GameModel> model) : model(model), window(null
 GameView::~GameView() {
 
 }
+
+void GameView::updateResolution() {
+    for (auto& actor : this->actors) {
+        actor.second.setResolution(this->model->windowX, this->model->windowY);
+    }
+}
+
+void GameView::checkWindowResize() {
+    int width, height;
+    glfwGetWindowSize(window, &width, &height);
+
+    if (width != this->model->windowX || height != this->model->windowY) {
+        this->model->windowX = width;
+        this->model->windowY = height;
+
+        this->updateResolution();
+    }
+} 
+
 
 bool GameView::ShouldWindowClose() const {
     return glfwWindowShouldClose(this->window);
@@ -66,30 +84,97 @@ std::vector<std::string> GameView::GetInput() const {
     return keyboardEvents;
 }
 
-void GameView::AddActor(Shape shape, std::string& shaderPath, std::string& texturePath, std::string& type, unsigned int id) {
-    if (this->actorTypes.count(type) == 1) {
-        ActorView newActor(actorTypes.find(type)->second, shaderPath, id);
+struct ActorTypeData {
+    std::string texturePath;
+    std::string shaderPath;
+    std::vector<float> positions;
+    std::vector<unsigned int> indices;
+};
+
+ActorTypeData getActorDataFromType(ActorType type) {
+    ActorTypeData data;
+
+    data.shaderPath = "res/shaders/Basic.shader";
+    float scale = 1.0f;
+    switch (type) {
+    case ActorType::Triangle:
+        data.indices = { 0, 1, 2 };
+        data.positions = {
+            -10.0f, -10.0f, 0.0f, 0.0f,
+            10.0f, -10.0f, 1.0f, 0.0f,
+            0.0f, 20.0f, 0.5f, 1.0f
+        };
+
+        return data;
+    case ActorType::Quad:
+        scale = 15.0f;
+        break;
+    case ActorType::Player:
+        data.indices = { 0, 1, 2 };
+        data.positions = {
+            -10.0f, -10.0f, 0.0f, 0.0f,
+            10.0f, -10.0f, 1.0f, 0.0f,
+            0.0f, 20.0f, 0.5f, 1.0f
+        };
+        data.texturePath = "res/textures/spaceshipNeu.bmp";
+        return data;
+        break;
+    case ActorType::AsteroidLarge:
+        scale = 30.0f;
+        data.texturePath = "res/textures/AsteroidBigTest.bmp";
+        break;
+    case ActorType::AsteroidMedium:
+        scale = 20.0f;
+        data.texturePath = "res/textures/AsteroidBigTest.bmp";
+        break;
+    case ActorType::AsteroidSmall:
+        scale = 10.0f;
+        data.texturePath = "res/textures/AsteroidBigTest.bmp";
+        break;
+    case ActorType::ShipLarge:
+        scale = 15.0f;
+        data.texturePath = "res/textures/spaceshipNeu.bmp";
+        break;
+    case ActorType::ShipSmall:
+        scale = 15.0f;
+        data.texturePath = "res/textures/spaceshipNeu.bmp";
+        break;
+    case ActorType::Projectile:
+        scale = 2.0f;
+        data.texturePath = "res/textures/projektil.bmp";
+        break;
+    }
+
+    data.indices = { 0, 1, 2, 2, 3, 0 };
+    data.positions = {
+            -scale, -scale, 0.0f, 0.0f,
+           scale, -scale, 1.0f, 0.0f,
+            scale, scale, 1.0f, 1.0f,
+            -scale, scale, 0.0f, 1.0f
+    };
+
+    return data;
+}
+
+
+void GameView::AddActor(unsigned int id, ActorType actorType) {
+    ActorTypeData typeData = getActorDataFromType(actorType);
+
+    if (this->actorDataPerType.count(actorType) == 1) {
+        ActorView newActor(actorDataPerType.find(actorType)->second, typeData.shaderPath, id, this->model->windowX, this->model->windowY);
         this->actors.insert({ id, std::move(newActor) });
     } else {
-        if (shape == Shape::Triangle) {
-            std::shared_ptr<ActorDataView> newActorType = std::make_shared<ActorDataView>(TriangleShape::indices.data(), TriangleShape::positions.data(), 6, TriangleShape::positions.size(), texturePath);
-            this->actorTypes.insert({ type, newActorType });
+        if (actorType == ActorType::Triangle) {
+            std::shared_ptr<ActorDataView> newActorType = std::make_shared<ActorDataView>(typeData.indices.data(), typeData.positions.data(), 6, typeData.positions.size(), typeData.texturePath);
+            this->actorDataPerType.insert({ actorType, newActorType });
 
-            ActorView newActor(newActorType, shaderPath, id);
+            ActorView newActor(newActorType, typeData.shaderPath, id, this->model->windowX, this->model->windowY);
             this->actors.insert({ id, std::move(newActor) });
-        }
-        else if (shape == Shape::Quad) {
-            std::shared_ptr<ActorDataView> newActorType = std::make_shared<ActorDataView>(QuadShape::indices.data(), QuadShape::positions.data(), 8, QuadShape::positions.size(), texturePath);
-            this->actorTypes.insert({ type, newActorType });
+        } else {
+            std::shared_ptr<ActorDataView> newActorType = std::make_shared<ActorDataView>(typeData.indices.data(), typeData.positions.data(), 8, typeData.positions.size(), typeData.texturePath);
+            this->actorDataPerType.insert({ actorType, newActorType });
 
-            ActorView newActor(newActorType, shaderPath, id);
-            this->actors.insert({ id, std::move(newActor) });
-        }
-        else if (shape == Shape::Quad2) {
-            std::shared_ptr<ActorDataView> newActorType = std::make_shared<ActorDataView>(Quad2Shape::indices.data(), Quad2Shape::positions.data(), 8, Quad2Shape::positions.size(), texturePath);
-            this->actorTypes.insert({ type, newActorType });
-
-            ActorView newActor(newActorType, shaderPath, id);
+            ActorView newActor(newActorType, typeData.shaderPath, id, this->model->windowX, this->model->windowY);
             this->actors.insert({ id, std::move(newActor) });
         }
     }
@@ -122,7 +207,7 @@ void GameView::Update() {
     // add new actors in view
     for (auto& currentActorModel : model->actors) {
         if (this->actors.count(currentActorModel.first) != 1) {
-            this->AddActor(currentActorModel.second->shape, currentActorModel.second->shaderPath, currentActorModel.second->texturePath, currentActorModel.second->type, currentActorModel.second->id);
+            this->AddActor(currentActorModel.second->id, currentActorModel.second->actorType);
         }
 
         // update actor position in view

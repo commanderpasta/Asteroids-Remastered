@@ -54,30 +54,36 @@ std::vector <std::tuple<unsigned int, float, float, float>> PhysicsEngine::updat
 			//actor->velocityX = std::max(0.0f, actor->velocityX - (actor->deacceleration * actor->velocityX / actor->currentSpeed));
 			//actor->velocityY = std::max(0.0f, actor->velocityY - actor->deacceleration);
 
-			if (actor->currentSpeed > 0.0f && actor->deacceleration != 0.0f) {
-				float velocityXNormalized = actor->velocityX / actor->currentSpeed;
-				float velocityYNormalized = actor->velocityY / actor->currentSpeed;
+			if (actor->deltaVelocity == 0.0f && actor->currentSpeed < 0.1f) {
+				actor->currentSpeed = 0.0f;
+				actor->velocityX = 0.0f;
+				actor->velocityY = 0.0f;
+			} else {
+				if (actor->currentSpeed > 0.0f && actor->deacceleration != 0.0f) {
+					float velocityXNormalized = actor->velocityX / actor->currentSpeed;
+					float velocityYNormalized = actor->velocityY / actor->currentSpeed;
 
-				actor->deacceleration = actor->currentSpeed * 0.005f;
-				actor->currentSpeed = std::max(0.0f, actor->currentSpeed - actor->deacceleration);
+					actor->deacceleration = actor->currentSpeed * 0.005f;
+					actor->currentSpeed = std::max(0.0f, actor->currentSpeed - actor->deacceleration);
 
-				actor->velocityX = actor->currentSpeed * velocityXNormalized;
-				actor->velocityY = actor->currentSpeed * velocityYNormalized;
+					actor->velocityX = actor->currentSpeed * velocityXNormalized;
+					actor->velocityY = actor->currentSpeed * velocityYNormalized;
+				}
+
+				actor->velocityX += actor->deltaVelocity * sin(actor->direction);
+				actor->velocityY += actor->deltaVelocity * cos(actor->direction);
+
+				if (actor->currentSpeed > 0.0f) {
+					float velocityXNormalized = actor->velocityX / actor->currentSpeed;
+					float velocityYNormalized = actor->velocityY / actor->currentSpeed;
+
+					actor->currentSpeed = std::min(actor->maxSpeed, sqrt(pow(actor->velocityX, 2.0f) + pow(actor->velocityY, 2.0f)));
+
+					actor->velocityX = actor->currentSpeed * velocityXNormalized;
+					actor->velocityY = actor->currentSpeed * velocityYNormalized;
+				}
 			}
-
-			actor->velocityX += actor->deltaVelocity * sin(actor->direction);
-			actor->velocityY += actor->deltaVelocity * cos(actor->direction);
-
-			if (actor->currentSpeed > 0.0f) {
-				float velocityXNormalized = actor->velocityX / actor->currentSpeed;
-				float velocityYNormalized = actor->velocityY / actor->currentSpeed;
-
-				actor->currentSpeed = std::min(actor->maxSpeed, sqrt(pow(actor->velocityX, 2.0f) + pow(actor->velocityY, 2.0f)));
-
-				actor->velocityX = actor->currentSpeed * velocityXNormalized;
-				actor->velocityY = actor->currentSpeed * velocityYNormalized;
-			}
-
+		
 			//add calculated vector to position
 			actor->x += actor->velocityX;
 			actor->y += actor->velocityY;

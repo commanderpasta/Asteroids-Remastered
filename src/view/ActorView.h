@@ -6,13 +6,12 @@
 
 
 class ActorView {
-	static float projectionMatrix[4][4];
 public: 
 	unsigned int id;
 	Shader shader;
 	std::shared_ptr<ActorDataView> data;
 
-	ActorView(std::shared_ptr<ActorDataView> data, std::string shaderPath, unsigned int id);
+	ActorView(std::shared_ptr<ActorDataView> data, std::string shaderPath, unsigned int id, float x, float y);
 	~ActorView();
 
 	ActorView(ActorView&& other) noexcept
@@ -30,4 +29,5 @@ public:
 	}
 
 	void SetPosition(float position[3], float angle);
+	void setResolution(float x, float y);
 };

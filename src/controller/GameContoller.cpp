@@ -46,6 +46,8 @@ void GameController::Loop() {
         else if (std::find(keyboardInput.begin(), keyboardInput.end(), "LEFT") != keyboardInput.end()) {
             this->model->RotatePlayerLeft();
         }
+
+        this->view.checkWindowResize();
         
         this->model->updatePositions();
         this->model->checkCollisions();
