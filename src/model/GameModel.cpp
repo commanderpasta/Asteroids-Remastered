@@ -1,7 +1,7 @@
 #include "GameModel.h"
 
 GameModel::GameModel(unsigned int windowX, unsigned int windowY) 
-	: windowX(windowX), windowY(windowY), physicsEngine(windowX, windowY), projectileCooldown(std::chrono::steady_clock::now() - std::chrono::seconds(1)) {
+	: windowX(windowX), windowY(windowY), physicsEngine(windowX, windowY) {
 }
 GameModel::~GameModel() {
 }
@@ -33,7 +33,7 @@ void GameModel::AddAsteroid(float startingPosition[3]) {
 	this->actors.insert({asteroidModel->id, asteroidModel});
 	this->asteroids.push_back(asteroidModel);
 
-	this->physicsEngine.addActor(asteroidModel->id, asteroidModel->position[0], asteroidModel->position[1], getRandomFloat(0.0f, 2 * MY_PI), 0.0f, 0.0f, 1.5f, 1.5f, asteroidModel->radius, false, AccelerationType::Linear);
+	this->physicsEngine.addActor(asteroidModel->id, asteroidModel->position[0], asteroidModel->position[1], getRandomFloat(0.0f, 2 * MY_PI), 0.0f, 0.0f, 0.5f, 0.5f, asteroidModel->radius, false, AccelerationType::Linear);
 }
 
 void GameModel::addMediumAsteroid(float startingPosition[3]) {
@@ -52,34 +52,6 @@ void GameModel::addSmallAsteroid(float startingPosition[3]) {
 	this->physicsEngine.addActor(asteroidModel->id, asteroidModel->position[0], asteroidModel->position[1], getRandomFloat(0.0f, 2 * MY_PI), 0.0f, 0.0f, 1.5f, 1.5f, asteroidModel->radius, false, AccelerationType::Linear);
 }
 
-void GameModel::addLargeShip() {
-	auto gen = std::bind(std::uniform_int_distribution<>(0, 1), std::default_random_engine());
-
-	bool startOnLeft = gen();
-	float x; 
-	float y;
-	float direction;
-
-	if (startOnLeft) {
-		x = 0.0f;
-		y = getRandomFloat(0.0f, windowY);
-		direction = MY_PI;
-	} else {
-		x = windowX;
-		y = getRandomFloat(0.0f, windowY);
-		direction = 0.0f;
-	}
-
-	float startingPosition[3] = { x, y, 0.0f };
-
-	std::shared_ptr<LargeShipModel> shipModel = std::make_shared<LargeShipModel>(startingPosition, this->currentTime, startOnLeft);
-
-	this->actors.insert({ shipModel->id, shipModel });
-	this->ship = shipModel;
-
-	this->physicsEngine.addActor(shipModel->id, shipModel->position[0], shipModel->position[1], direction, 0.0f, 0.0f, 1.0f, 1.0f, shipModel->radius, false, AccelerationType::None);
-}
-
 
 void GameModel::setPlayerAccelerating(bool isAccelerating) {
 	if (!this->player) {
@@ -87,23 +59,43 @@ void GameModel::setPlayerAccelerating(bool isAccelerating) {
 	}
 
 	if (isAccelerating) {
-		this->physicsEngine.setAcceleration(this->player->id, 0.05f);
+		this->physicsEngine.setAcceleration(this->player->id, 0.03f);
 	}
 	else {
 		this->physicsEngine.setAcceleration(this->player->id, 0.0f);
 	}
 }
 
-void GameModel::fireProjectile() {
+void GameModel::shipFireProjectile() {
+	if (!this->ship) {
+		return;
+	}
+
+	duration<double> timeSpan = duration_cast<duration<double>>(currentTime - this->ship->projectileCooldown);
+	if (timeSpan.count() > 0.25 && this->projectiles.size() < 4) {
+		this->ship->projectileCooldown = currentTime;
+		this->ship->activeProjectileCount++;
+
+		std::shared_ptr<ProjectileModel> projectileModel = std::make_shared<ProjectileModel>(ship->position, currentTime, ship->id);
+		this->actors.insert({ projectileModel->id, projectileModel });
+		this->projectiles.push_back(projectileModel);
+
+		this->physicsEngine.addActor(projectileModel->id, projectileModel->position[0], projectileModel->position[1], ship->rotation, 0.000f, 1.0f, 6.0f, 6.0f, projectileModel->radius, true, AccelerationType::Linear);
+	}
+}
+
+
+void GameModel::playerFireProjectile() {
 	if (!this->player) {
 		return;
 	}
 
-	duration<double> timeSpan = duration_cast<duration<double>>(currentTime - this->projectileCooldown);
-	if (timeSpan.count() > 0.25 && this->projectiles.size() < 4) {
-		this->projectileCooldown = currentTime;
+	duration<double> timeSpan = duration_cast<duration<double>>(this->currentTime - this->player->projectileCooldown);
+	if (timeSpan.count() > 0.25 && this->player->activeProjectileCount < 4) {
+		this->player->projectileCooldown = this->currentTime;
+		this->player->activeProjectileCount++;
 
-		std::shared_ptr<ProjectileModel> projectileModel = std::make_shared<ProjectileModel>(this->player->position, currentTime);
+		std::shared_ptr<ProjectileModel> projectileModel = std::make_shared<ProjectileModel>(this->player->position, this->currentTime, this->player->id);
 		this->actors.insert({ projectileModel->id, projectileModel });
 		this->projectiles.push_back(projectileModel);
 
@@ -119,6 +111,12 @@ void GameModel::removeActor(unsigned int id) {
 			auto it = std::find_if(this->projectiles.begin(), this->projectiles.end(), [id](std::shared_ptr<ProjectileModel> object) { return object->id == id; });
 
 			if (it != this->projectiles.end()) {
+				if (this->player && this->player->id == it->get()->ownerId) {
+					this->player->activeProjectileCount--;
+				} else if (this->ship && this->ship->id == it->get()->ownerId) {
+					this->ship->activeProjectileCount--;
+				}
+
 				this->projectiles.erase(it);
 			}
 		} else if (actor->second->actorType == ActorType::AsteroidLarge) {
@@ -144,7 +142,7 @@ void GameModel::removeActor(unsigned int id) {
 			if (it != this->smallAsteroids.end()) {
 				this->smallAsteroids.erase(it);
 			}
-		} else if (actor->second->actorType == ActorType::ShipLarge) {
+		} else if (actor->second->actorType == ActorType::ShipLarge || actor->second->actorType == ActorType::ShipSmall) {
 			this->ship.reset();
 		} else if (actor->second->actorType == ActorType::Player) {
 			this->player.reset();
@@ -180,7 +178,7 @@ void GameModel::Setup() {
 		this->AddAsteroid(initialAsteroidPosition);
 	}
 
-	this->addLargeShip();
+	this->addShip(false);
 }
 
 void GameModel::checkPlayerDeath() {
@@ -213,23 +211,55 @@ void GameModel::updatePositions() {
 	}
 }
 
+void GameModel::checkCollisionWithProjectile(unsigned int projectileId, unsigned int targetId) {
+	auto projectile = std::dynamic_pointer_cast<ProjectileModel>(this->actors[projectileId]);
+
+	if (this->player && this->player->id == targetId && this->player->id == projectile->ownerId || this->ship && this->ship->id == targetId && this->ship->id == projectile->ownerId) {
+		return;
+	} else {
+		this->removeActor(targetId);
+		this->removeActor(projectileId);
+	}
+}
+
 void GameModel::checkCollisions() {
 	auto test = this->physicsEngine.checkCollisions();
 
 	for (auto& collisionPairIds : test) {
 		if (this->actors.count(collisionPairIds.first) == 1 && this->actors.count(collisionPairIds.second) == 1) {
+
+			if (this->actors[collisionPairIds.first]->actorType == ActorType::Projectile && this->actors[collisionPairIds.second]->actorType != ActorType::Projectile) {
+				this->checkCollisionWithProjectile(collisionPairIds.first, collisionPairIds.second);
+			}
+			else if (this->actors[collisionPairIds.first]->actorType != ActorType::Projectile && this->actors[collisionPairIds.second]->actorType == ActorType::Projectile) {
+				this->checkCollisionWithProjectile(collisionPairIds.second, collisionPairIds.first);
+			}
+			else {
+				this->actors[collisionPairIds.first]->hasBeenHit();
+				this->actors[collisionPairIds.second]->hasBeenHit();
+
+				this->removeActor(collisionPairIds.first);
+				this->removeActor(collisionPairIds.second);
+			}
+			/*
 			if (this->player != nullptr) { //keep checking collisions while player is dead but avoid nullptr exception
-				if ((this->actors[collisionPairIds.first]->id == this->player->id && this->actors[collisionPairIds.second]->actorType == ActorType::Projectile) ||
-					(this->actors[collisionPairIds.second]->id == this->player->id && this->actors[collisionPairIds.first]->actorType == ActorType::Projectile)) {
+				auto projectile = std::dynamic_pointer_cast<ProjectileModel>(this->actors[collisionPairIds.second]);
+				if (((this->actors[collisionPairIds.first]->id == this->player->id && this->actors[collisionPairIds.second]->actorType == ActorType::Projectile) ||
+					(this->actors[collisionPairIds.second]->id == this->player->id && this->actors[collisionPairIds.first]->actorType == ActorType::Projectile)) && projectile->ownerId == this->player->id) {
 					continue;
 				}
 			}
 
-			this->actors[collisionPairIds.first]->hasBeenHit();
-			this->actors[collisionPairIds.second]->hasBeenHit();
-
-			this->removeActor(collisionPairIds.first);
-			this->removeActor(collisionPairIds.second);
+			if (this->ship != nullptr) {
+				auto projectile = std::dynamic_pointer_cast<ProjectileModel>(this->actors[collisionPairIds.second]);
+				if (projectile) {
+					if (((this->actors[collisionPairIds.first]->id == this->ship->id && this->actors[collisionPairIds.second]->actorType == ActorType::Projectile) ||
+						(this->actors[collisionPairIds.second]->id == this->ship->id && this->actors[collisionPairIds.first]->actorType == ActorType::Projectile)) && projectile->ownerId == this->ship->id) {
+						continue;
+					}
+				}
+			}
+			*/
 		}
 	}
 }
@@ -247,6 +277,43 @@ void GameModel::checkProjectileLifetimes() {
 	for (unsigned int id : idsToRemove) {
 		this->removeActor(id);
 	}
+}
+
+void GameModel::addShip(bool isLarge) {
+	auto gen = std::bind(std::uniform_int_distribution<>(0, 1), std::default_random_engine());
+
+	bool startOnLeft = gen();
+	float x;
+	float y;
+	float direction;
+
+	if (startOnLeft) {
+		x = 0.0f;
+		y = getRandomFloat(0.0f, windowY);
+		direction = MY_PI;
+	}
+	else {
+		x = windowX;
+		y = getRandomFloat(0.0f, windowY);
+		direction = 0.0f;
+	}
+
+	float startingPosition[3] = { x, y, 0.0f };
+
+	std::shared_ptr<BaseShipModel> shipModel;
+
+	if (isLarge) {
+		shipModel = std::make_shared<LargeShipModel>(startingPosition, this->currentTime, startOnLeft);
+	}
+	else {
+		shipModel = std::make_shared<SmallShipModel>(startingPosition, this->currentTime, startOnLeft);
+	}
+
+	this->actors.insert({ shipModel->id, shipModel });
+	this->ship = shipModel;
+
+	this->physicsEngine.addActor(shipModel->id, shipModel->position[0], shipModel->position[1], direction, 0.0f, 0.0f, 1.0f, 1.0f, shipModel->radius, true, AccelerationType::None);
+	this->physicsEngine.setBoundByWindow(shipModel->id, false, true);
 }
 
 void GameModel::setShipDirection() {
@@ -285,5 +352,11 @@ void GameModel::setShipDirection() {
 
 		this->physicsEngine.setDirection(this->ship->id, newDirectionInRad);
 		this->ship->lastChangeOfDirection = currentTime;
+	}
+}
+
+void GameModel::checkShipLifetime() {
+	if (this->ship && this->ship->hasReachedOtherSide(this->windowX)) {
+		this->removeActor(this->ship->id);
 	}
 }

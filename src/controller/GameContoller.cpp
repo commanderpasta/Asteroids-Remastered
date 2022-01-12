@@ -24,8 +24,10 @@ void GameController::Loop() {
         this->model->setCurrentTime();
         this->model->checkProjectileLifetimes();
         this->model->setShipDirection();
+        this->model->checkShipLifetime();
 
         this->model->checkPlayerDeath();
+        this->model->shipFireProjectile();
 
         std::vector<std::string> keyboardInput = this->view.GetInput();
         if (std::find(keyboardInput.begin(), keyboardInput.end(), "FORWARD") != keyboardInput.end()) {
@@ -36,7 +38,7 @@ void GameController::Loop() {
         }
 
         if (std::find(keyboardInput.begin(), keyboardInput.end(), "SPACE") != keyboardInput.end()) {
-            this->model->fireProjectile();
+            this->model->playerFireProjectile();
         }
 
         if (std::find(keyboardInput.begin(), keyboardInput.end(), "RIGHT") != keyboardInput.end()) {

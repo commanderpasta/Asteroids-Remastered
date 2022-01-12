@@ -30,6 +30,9 @@ class PhysicsEngine {
 		float velocityX;
 		float velocityY;
 		unsigned int id;
+		
+		bool boundInWindowX;
+		bool boundInWindowY;
 
 		AccelerationType accelerationType;
 		PhysicsObject(unsigned int id, float x, float y, float direction, float acceleration, float deacceleration, float startingSpeed, float maxSpeed, float hitboxRadius, AccelerationType accelerationType);
@@ -52,6 +55,8 @@ public:
 
 	void setDirection(unsigned int id, float directionInRad);
 	void setAcceleration(unsigned int id, float acceleration);
+	void setBoundByWindow(unsigned int id, bool x, bool y);
+
 
 	void rotatePlayerLeft();
 	void rotatePlayerRight();

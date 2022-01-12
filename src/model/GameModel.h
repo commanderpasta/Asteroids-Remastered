@@ -18,6 +18,7 @@
 #include <chrono>
 #include <random>
 #include <functional>
+#include <variant>
 
 using namespace std::chrono;
 
@@ -27,7 +28,6 @@ class GameModel {
 	PhysicsEngine physicsEngine;
 	
 	steady_clock::time_point currentTime;
-	steady_clock::time_point projectileCooldown;
 	steady_clock::time_point lastPlayerDeath;
 public:
 	unsigned int windowX;
@@ -48,20 +48,24 @@ public:
 	void AddAsteroid(float startingPosition[3]);
 	void addMediumAsteroid(float startingPosition[3]);
 	void addSmallAsteroid(float startingPosition[3]);
-	//void addSmallShip();
-	void addLargeShip();
+	void addShip(bool isLarge);
 
 	void removeActor(unsigned int id);
 
 	void setPlayerAccelerating(bool isAccelerating);
 	void RotatePlayerRight();
 	void RotatePlayerLeft();
-	void fireProjectile();
+	void fireProjectile(unsigned int ownerId);
+	void playerFireProjectile();
 
 	void updatePositions();
 	void checkCollisions();
+	void checkCollisionWithProjectile(unsigned int projectileId, unsigned int targetId);
 	void checkProjectileLifetimes();
+	void checkShipLifetime();
 	void setShipDirection();
+	void shipFireProjectile();
+
 
 	void checkPlayerDeath();
 };

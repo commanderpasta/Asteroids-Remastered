@@ -8,7 +8,8 @@ PhysicsEngine::PhysicsEngine(unsigned int boundaryX, unsigned int boundaryY)
 PhysicsEngine::~PhysicsEngine() {}
 
 PhysicsEngine::PhysicsObject::PhysicsObject(unsigned int id, float x, float y, float direction, float acceleration, float deacceleration, float startingSpeed, float maxSpeed, float hitboxRadius, AccelerationType accelerationType)
-	: id(id), x(x), y(y), direction(direction), deltaVelocity(acceleration), deacceleration(deacceleration), maxSpeed(maxSpeed), currentSpeed(startingSpeed), velocityX(startingSpeed * sin(direction)), velocityY(startingSpeed * cos(direction)), rotation(0.0f), collisionRadius(hitboxRadius), accelerationType(accelerationType)
+	: id(id), x(x), y(y), direction(direction), deltaVelocity(acceleration), deacceleration(deacceleration), maxSpeed(maxSpeed), currentSpeed(startingSpeed), velocityX(startingSpeed * sin(direction)), velocityY(startingSpeed * cos(direction)), rotation(0.0f), 
+	collisionRadius(hitboxRadius), accelerationType(accelerationType), boundInWindowX(true), boundInWindowY(true)
 {}
 PhysicsEngine::PhysicsObject::~PhysicsObject() {}
 
@@ -94,16 +95,22 @@ std::vector <std::tuple<unsigned int, float, float, float>> PhysicsEngine::updat
 		}
 
 		//wrap around if reaching out-of-bounds
-		if (actor->x > this->boundaryX) {
-			actor->x = fmod(actor->x, this->boundaryX);
-		} else if (actor->x < 0.0f) {
-			actor->x = this->boundaryX - fmod(actor->x, this->boundaryX);
+		if (actor->boundInWindowX) {
+			if (actor->x > this->boundaryX) {
+				actor->x = fmod(actor->x, this->boundaryX);
+			}
+			else if (actor->x < 0.0f) {
+				actor->x = this->boundaryX - fmod(actor->x, this->boundaryX);
+			}
 		}
 
-		if (actor->y > this->boundaryY) {
-			actor->y = fmod(actor->y, this->boundaryY);
-		} else if (actor->y < 0.0f) {
-			actor->y = this->boundaryY - fmod(actor->y, this->boundaryY);
+		if (actor->boundInWindowY) {
+			if (actor->y > this->boundaryY) {
+				actor->y = fmod(actor->y, this->boundaryY);
+			}
+			else if (actor->y < 0.0f) {
+				actor->y = this->boundaryY - fmod(actor->y, this->boundaryY);
+			}
 		}
 		
 		std::tuple<unsigned int, float, float, float> actorPositions {actor->id, actor->x, actor->y, actor->rotation};
@@ -152,21 +159,32 @@ std::vector<std::pair<unsigned int, unsigned int>> PhysicsEngine::checkCollision
 	std::vector<std::pair<unsigned int, unsigned int>> test;
 
 	for (auto& actor : this->actorPhysicsObjects) {
-		if (actor->id != this->player->id) {
-			for (auto& actorWithHitboxRegistration : this->actorsWithHitboxRegistration) {
-				if (actor->id != actorWithHitboxRegistration->id) {
-					auto dx = (actorWithHitboxRegistration->x + actorWithHitboxRegistration->collisionRadius) - (actor->x + actor->collisionRadius);
-					auto dy = (actorWithHitboxRegistration->y + actorWithHitboxRegistration->collisionRadius) - (actor->y + actor->collisionRadius);
-					auto distance = sqrt(dx * dx + dy * dy);
+		if (actor->id == this->player->id) {
+			continue;
+		}
 
-					if (distance < (actorWithHitboxRegistration->collisionRadius + actor->collisionRadius)) {
-						std::pair<unsigned int, unsigned int> collisionIds = { actorWithHitboxRegistration->id, actor->id };
-						test.push_back(collisionIds);
-					}
+		for (auto& actorWithHitboxRegistration : this->actorsWithHitboxRegistration) {
+			if (actor->id != actorWithHitboxRegistration->id) {
+				auto dx = (actorWithHitboxRegistration->x + actorWithHitboxRegistration->collisionRadius) - (actor->x + actor->collisionRadius);
+				auto dy = (actorWithHitboxRegistration->y + actorWithHitboxRegistration->collisionRadius) - (actor->y + actor->collisionRadius);
+				auto distance = sqrt(dx * dx + dy * dy);
+
+				if (distance < (actorWithHitboxRegistration->collisionRadius + actor->collisionRadius)) {
+					std::pair<unsigned int, unsigned int> collisionIds = { actorWithHitboxRegistration->id, actor->id };
+					test.push_back(collisionIds);
 				}
 			}
 		}
 	}
 	
 	return test;
+}
+
+void PhysicsEngine::setBoundByWindow(unsigned int id, bool x, bool y) {
+	auto it = std::find_if(this->actorPhysicsObjects.begin(), this->actorPhysicsObjects.end(), [id](std::shared_ptr<PhysicsObject> object) { return object->id == id; });
+
+	if (it != this->actorPhysicsObjects.end()) {
+		it->get()->boundInWindowX = x;
+		it->get()->boundInWindowY = y;
+	}
 }

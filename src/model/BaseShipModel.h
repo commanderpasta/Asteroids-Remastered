@@ -9,11 +9,18 @@ enum class MovingState { Left, Right, LeftUp, LeftDown, RightUp, RightDown };
 
 class BaseShipModel : public ActorModel {
 	MovingState movingState;
+	MovingState baseDirection;
 public:
 	static float radius;
-	BaseShipModel(float startingPosition[3], steady_clock::time_point timeOfSpawn, bool isDirectionLeft);
-	~BaseShipModel();
+	unsigned int activeProjectileCount;
 
+	steady_clock::time_point projectileCooldown;
 	steady_clock::time_point lastChangeOfDirection;
 	MovingState changeDirection();
+
+	BaseShipModel(float startingPosition[3], steady_clock::time_point timeOfSpawn, bool startOnLeft, ActorType shipType);
+	~BaseShipModel();
+
+	bool fireProjectileIfOffCooldown(steady_clock::time_point currentTime);
+	bool hasReachedOtherSide(int windowX);
 };

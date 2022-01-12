@@ -6,7 +6,7 @@ GameView::GameView(std::shared_ptr<GameModel> model) : model(model), window(null
     /* Initialize the library */
     glfwInit();
 
-    this->window = glfwCreateWindow(this->model->windowX, this->model->windowY, "Asteroids: Remastered", glfwGetPrimaryMonitor(), NULL);
+    this->window = glfwCreateWindow(this->model->windowX, this->model->windowY, "Asteroids: Remastered", NULL, NULL); //glfwGetPrimaryMonitor()
 
     if (!this->window)
     {
@@ -91,11 +91,29 @@ struct ActorTypeData {
     std::vector<unsigned int> indices;
 };
 
+std::string getRandomAsteroidTexture() {
+    int randomInt = rand() % 4;
+    switch (randomInt) {
+    case 0:
+        return "res/textures/Asteroid1.bmp";
+    case 1:
+        return "res/textures/Asteroid2.bmp";
+    case 2:
+        return "res/textures/Asteroid3.bmp";
+    case 3:
+        return "res/textures/Asteroid4.bmp";
+    default: 
+        return "res/textures/Asteroid1.bmp";
+    }
+}
+
 ActorTypeData getActorDataFromType(ActorType type) {
     ActorTypeData data;
 
     data.shaderPath = "res/shaders/Basic.shader";
-    float scale = 1.0f;
+    float width = 1.0f;
+    float height = 1.0f;
+
     switch (type) {
     case ActorType::Triangle:
         data.indices = { 0, 1, 2 };
@@ -107,62 +125,90 @@ ActorTypeData getActorDataFromType(ActorType type) {
 
         return data;
     case ActorType::Quad:
-        scale = 15.0f;
+        width = 15.0f;
+        height = 15.0f;
         break;
     case ActorType::Player:
         data.indices = { 0, 1, 2 };
         data.positions = {
-            -10.0f, -10.0f, 0.0f, 0.0f,
-            10.0f, -10.0f, 1.0f, 0.0f,
-            0.0f, 20.0f, 0.5f, 1.0f
+            -8.0f, -8.0f, 0.0f, 0.0f,
+            8.0f, -8.0f, 1.0f, 0.0f,
+            0.0f, 16.0f, 0.5f, 1.0f
         };
         data.texturePath = "res/textures/spaceshipNeu.bmp";
         return data;
         break;
     case ActorType::AsteroidLarge:
-        scale = 30.0f;
-        data.texturePath = "res/textures/AsteroidBigTest.bmp";
+        width = 30.0f;
+        height = 30.0f;
+        data.texturePath = getRandomAsteroidTexture();
         break;
     case ActorType::AsteroidMedium:
-        scale = 20.0f;
-        data.texturePath = "res/textures/AsteroidBigTest.bmp";
+        width = 15.0f;
+        height = 15.0f;
+        data.texturePath = getRandomAsteroidTexture();
         break;
     case ActorType::AsteroidSmall:
-        scale = 10.0f;
-        data.texturePath = "res/textures/AsteroidBigTest.bmp";
+        width = 6.0f;
+        height = 6.0f;
+        data.texturePath = getRandomAsteroidTexture();
         break;
     case ActorType::ShipLarge:
-        scale = 15.0f;
-        data.texturePath = "res/textures/spaceshipNeu.bmp";
+        width = 20.0f;
+        height = 10.0f;
+        data.texturePath = "res/textures/Ufo.bmp";
         break;
     case ActorType::ShipSmall:
-        scale = 15.0f;
-        data.texturePath = "res/textures/spaceshipNeu.bmp";
+        width = 12.0f;
+        height = 6.0f;
+        data.texturePath = "res/textures/Ufo.bmp";
         break;
     case ActorType::Projectile:
-        scale = 2.0f;
+        width = 2.0f;
+        height = 2.0f;
         data.texturePath = "res/textures/projektil.bmp";
         break;
     }
 
     data.indices = { 0, 1, 2, 2, 3, 0 };
     data.positions = {
-            -scale, -scale, 0.0f, 0.0f,
-           scale, -scale, 1.0f, 0.0f,
-            scale, scale, 1.0f, 1.0f,
-            -scale, scale, 0.0f, 1.0f
+            -width, -height, 0.0f, 0.0f,
+           width, -height, 1.0f, 0.0f,
+            width, height, 1.0f, 1.0f,
+            -width, height, 0.0f, 1.0f
     };
 
     return data;
 }
 
 
+//TODO: Simplify
 void GameView::AddActor(unsigned int id, ActorType actorType) {
     ActorTypeData typeData = getActorDataFromType(actorType);
 
     if (this->actorDataPerType.count(actorType) == 1) {
-        ActorView newActor(actorDataPerType.find(actorType)->second, typeData.shaderPath, id, this->model->windowX, this->model->windowY);
-        this->actors.insert({ id, std::move(newActor) });
+        auto test = this->actorDataPerType[actorType];
+
+        if (typeData.texturePath == test->texture.getFilePath()) {
+            ActorView newActor(actorDataPerType.find(actorType)->second, typeData.shaderPath, id, this->model->windowX, this->model->windowY);
+            this->actors.insert({ id, std::move(newActor) });
+        }
+        else {
+            if (actorType == ActorType::Triangle) {
+                std::shared_ptr<ActorDataView> newActorType = std::make_shared<ActorDataView>(typeData.indices.data(), typeData.positions.data(), 6, typeData.positions.size(), typeData.texturePath);
+                this->actorDataPerType.insert({ actorType, newActorType });
+
+                ActorView newActor(newActorType, typeData.shaderPath, id, this->model->windowX, this->model->windowY);
+                this->actors.insert({ id, std::move(newActor) });
+            }
+            else {
+                std::shared_ptr<ActorDataView> newActorType = std::make_shared<ActorDataView>(typeData.indices.data(), typeData.positions.data(), 8, typeData.positions.size(), typeData.texturePath);
+                this->actorDataPerType.insert({ actorType, newActorType });
+
+                ActorView newActor(newActorType, typeData.shaderPath, id, this->model->windowX, this->model->windowY);
+                this->actors.insert({ id, std::move(newActor) });
+            }
+        }
     } else {
         if (actorType == ActorType::Triangle) {
             std::shared_ptr<ActorDataView> newActorType = std::make_shared<ActorDataView>(typeData.indices.data(), typeData.positions.data(), 6, typeData.positions.size(), typeData.texturePath);
