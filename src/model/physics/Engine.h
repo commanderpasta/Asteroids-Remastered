@@ -4,7 +4,8 @@
 #include <vector>
 #include <iostream>
 
-#define MY_PI 3.14159265358979323846
+#include <model/Maths.h>
+
 #define DELTA 0.03f
 
 enum class AccelerationType { Linear, None };

@@ -6,6 +6,20 @@ GameModel::GameModel(unsigned int windowX, unsigned int windowY)
 GameModel::~GameModel() {
 }
 
+void GameModel::Setup() {
+	this->setCurrentTime();
+
+	float initialPlayerPosition[3] = { 200.0f, 200.0f, 0.0f };
+	this->AddPlayer(initialPlayerPosition, 0.0f);
+
+	for (int i = 0; i < 5; i++) {
+		float initialAsteroidPosition[3] = { getRandomFloat(0.0f, windowX), getRandomFloat(0.0f, windowY), 0.0f };
+		this->AddAsteroid(initialAsteroidPosition);
+	}
+
+	this->addShip(true);
+}
+
 void GameModel::setCurrentTime() {
 	this->currentTime = steady_clock::now();
 }
@@ -16,16 +30,6 @@ void GameModel::AddPlayer(float startingPosition[3], float rotation) {
 	this->player = playerModel;
 
 	this->physicsEngine.addPlayer(playerModel->id, playerModel->position[0], playerModel->position[1], 0.0f, 0.0f, 0.005f, 0.0f, 4.0f, playerModel->radius);
-}
-
-float getRandomFloat(float min, float max)
-{
-	float random = ((float)rand()) / (float)RAND_MAX;
-
-	// generate (in your case) a float between 0 and (4.5-.78)
-	// then add .78, giving you a float between .78 and 4.5
-	float range = max - min;
-	return (random * range) + min;
 }
 
 void GameModel::AddAsteroid(float startingPosition[3]) {
@@ -59,7 +63,7 @@ void GameModel::setPlayerAccelerating(bool isAccelerating) {
 	}
 
 	if (isAccelerating) {
-		this->physicsEngine.setAcceleration(this->player->id, 0.03f);
+		this->physicsEngine.setAcceleration(this->player->id, 0.015f);
 	}
 	else {
 		this->physicsEngine.setAcceleration(this->player->id, 0.0f);
@@ -67,12 +71,12 @@ void GameModel::setPlayerAccelerating(bool isAccelerating) {
 }
 
 void GameModel::shipFireProjectile() {
-	if (!this->ship) {
+	if (!this->ship || !this->player) {
 		return;
 	}
 
 	duration<double> timeSpan = duration_cast<duration<double>>(currentTime - this->ship->projectileCooldown);
-	if (timeSpan.count() > 0.25 && this->projectiles.size() < 4) {
+	if (timeSpan.count() > 0.8 && this->ship->activeProjectileCount < 4) {
 		this->ship->projectileCooldown = currentTime;
 		this->ship->activeProjectileCount++;
 
@@ -80,7 +84,9 @@ void GameModel::shipFireProjectile() {
 		this->actors.insert({ projectileModel->id, projectileModel });
 		this->projectiles.push_back(projectileModel);
 
-		this->physicsEngine.addActor(projectileModel->id, projectileModel->position[0], projectileModel->position[1], ship->rotation, 0.000f, 1.0f, 6.0f, 6.0f, projectileModel->radius, true, AccelerationType::Linear);
+		// calculate direction (in rad) ship to the player
+		float direction = this->ship->calcProjectileDirection(this->player->position);
+		this->physicsEngine.addActor(projectileModel->id, projectileModel->position[0], projectileModel->position[1], direction, 0.000f, 0.0f, 3.0f, 3.0f, projectileModel->radius, true, AccelerationType::Linear);
 	}
 }
 
@@ -167,20 +173,6 @@ void GameModel::RotatePlayerRight() {
 	this->physicsEngine.rotatePlayerRight();
 }
 
-void GameModel::Setup() {
-	this->setCurrentTime();
-
-	float initialPlayerPosition[3] = { 200.0f, 200.0f, 0.0f };
-	this->AddPlayer(initialPlayerPosition, 0.0f);
-
-	for (int i = 0; i < 5; i++) {
-		float initialAsteroidPosition[3] = { rand() % 700, rand() % 300, 0.0f };
-		this->AddAsteroid(initialAsteroidPosition);
-	}
-
-	this->addShip(false);
-}
-
 void GameModel::checkPlayerDeath() {
 	if (this->player) {
 		return;
@@ -198,7 +190,7 @@ void GameModel::updatePositions() {
 	//TODO: return rotations too
 	auto test = this->physicsEngine.updatePositions();
 
-	for (auto& testt : test) {
+	for (auto& testt : test) { 
 		//actor->SetPosition(this->physicsEngine->getPosition(actor->id));
 		auto peter = this->actors.find(std::get<0>(testt));
 
@@ -241,25 +233,6 @@ void GameModel::checkCollisions() {
 				this->removeActor(collisionPairIds.first);
 				this->removeActor(collisionPairIds.second);
 			}
-			/*
-			if (this->player != nullptr) { //keep checking collisions while player is dead but avoid nullptr exception
-				auto projectile = std::dynamic_pointer_cast<ProjectileModel>(this->actors[collisionPairIds.second]);
-				if (((this->actors[collisionPairIds.first]->id == this->player->id && this->actors[collisionPairIds.second]->actorType == ActorType::Projectile) ||
-					(this->actors[collisionPairIds.second]->id == this->player->id && this->actors[collisionPairIds.first]->actorType == ActorType::Projectile)) && projectile->ownerId == this->player->id) {
-					continue;
-				}
-			}
-
-			if (this->ship != nullptr) {
-				auto projectile = std::dynamic_pointer_cast<ProjectileModel>(this->actors[collisionPairIds.second]);
-				if (projectile) {
-					if (((this->actors[collisionPairIds.first]->id == this->ship->id && this->actors[collisionPairIds.second]->actorType == ActorType::Projectile) ||
-						(this->actors[collisionPairIds.second]->id == this->ship->id && this->actors[collisionPairIds.first]->actorType == ActorType::Projectile)) && projectile->ownerId == this->ship->id) {
-						continue;
-					}
-				}
-			}
-			*/
 		}
 	}
 }
@@ -280,22 +253,19 @@ void GameModel::checkProjectileLifetimes() {
 }
 
 void GameModel::addShip(bool isLarge) {
-	auto gen = std::bind(std::uniform_int_distribution<>(0, 1), std::default_random_engine());
-
-	bool startOnLeft = gen();
+	bool startOnLeft = randomBool();
 	float x;
 	float y;
 	float direction;
 
 	if (startOnLeft) {
 		x = 0.0f;
-		y = getRandomFloat(0.0f, windowY);
-		direction = MY_PI;
-	}
-	else {
-		x = windowX;
-		y = getRandomFloat(0.0f, windowY);
+		y = getRandomFloat(20.0f, windowY - 20.0f);
 		direction = 0.0f;
+	} else {
+		x = windowX;
+		y = getRandomFloat(20.0f, windowY - 20.0f);
+		direction = MY_PI;
 	}
 
 	float startingPosition[3] = { x, y, 0.0f };

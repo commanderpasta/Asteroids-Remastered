@@ -21,6 +21,6 @@ public:
 	BaseShipModel(float startingPosition[3], steady_clock::time_point timeOfSpawn, bool startOnLeft, ActorType shipType);
 	~BaseShipModel();
 
-	bool fireProjectileIfOffCooldown(steady_clock::time_point currentTime);
 	bool hasReachedOtherSide(int windowX);
+	virtual float calcProjectileDirection(float playerPosition[3]) = 0;
 };

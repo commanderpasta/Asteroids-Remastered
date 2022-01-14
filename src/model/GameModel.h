@@ -1,5 +1,7 @@
 #pragma once
 
+#include "Maths.h"
+
 #include "ActorModel.h"
 #include "PlayerModel.h"
 #include "AsteroidModel.h"
@@ -16,9 +18,6 @@
 #include <memory>
 #include <map>
 #include <chrono>
-#include <random>
-#include <functional>
-#include <variant>
 
 using namespace std::chrono;
 

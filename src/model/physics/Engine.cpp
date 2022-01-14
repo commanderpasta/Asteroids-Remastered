@@ -52,9 +52,6 @@ std::vector <std::tuple<unsigned int, float, float, float>> PhysicsEngine::updat
 		actor->currentSpeed = sqrt(pow(actor->velocityX, 2.0f) + pow(actor->velocityY, 2.0f));
 
 		if (actor->accelerationType == AccelerationType::Linear) {
-			//actor->velocityX = std::max(0.0f, actor->velocityX - (actor->deacceleration * actor->velocityX / actor->currentSpeed));
-			//actor->velocityY = std::max(0.0f, actor->velocityY - actor->deacceleration);
-
 			if (actor->deltaVelocity == 0.0f && actor->currentSpeed < 0.1f) {
 				actor->currentSpeed = 0.0f;
 				actor->velocityX = 0.0f;
