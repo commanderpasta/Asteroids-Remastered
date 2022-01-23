@@ -2,6 +2,8 @@
 
 #include <iostream>
 
+int counterr = 0;
+
 GameView::GameView(std::shared_ptr<GameModel> model) : model(model), window(nullptr) {
     /* Initialize the library */
     glfwInit();
@@ -27,6 +29,8 @@ GameView::GameView(std::shared_ptr<GameModel> model) : model(model), window(null
 
     GLCall(glEnable(GL_BLEND));
     GLCall(glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA));
+
+    Text::setup();
 }
 
 GameView::~GameView() {
@@ -60,7 +64,7 @@ void GameView::SwapBuffers() const {
     glfwSwapBuffers(this->window);
 }
 
-std::vector<std::string> GameView::GetInput() const {
+std::vector<std::string> GameView::GetInput() {
     glfwPollEvents();
 
     std::vector<std::string> keyboardEvents;
@@ -79,108 +83,20 @@ std::vector<std::string> GameView::GetInput() const {
     }
     if (glfwGetKey(this->window, GLFW_KEY_H) == GLFW_PRESS) {
         keyboardEvents.push_back("H");
+        if (counterr == 0) {
+            this->AddText(900, "DAVID IST EIN KEK", 50.0f, 50.0f);
+            counterr++;
+        }
     }
 
     return keyboardEvents;
 }
 
-struct ActorTypeData {
-    std::string texturePath;
-    std::string shaderPath;
-    std::vector<float> positions;
-    std::vector<unsigned int> indices;
-};
 
-std::string getRandomAsteroidTexture() {
-    int randomInt = rand() % 4;
-    switch (randomInt) {
-    case 0:
-        return "res/textures/Asteroid1.bmp";
-    case 1:
-        return "res/textures/Asteroid2.bmp";
-    case 2:
-        return "res/textures/Asteroid3.bmp";
-    case 3:
-        return "res/textures/Asteroid4.bmp";
-    default: 
-        return "res/textures/Asteroid1.bmp";
-    }
+void GameView::AddText(unsigned int id, std::string text, float x, float y) {
+    Text newText(id, text, x, y, this->model->windowX, this->model->windowY);
+    this->texts.insert({id, std::move(newText)});
 }
-
-ActorTypeData getActorDataFromType(ActorType type) {
-    ActorTypeData data;
-
-    data.shaderPath = "res/shaders/Basic.shader";
-    float width = 1.0f;
-    float height = 1.0f;
-
-    switch (type) {
-    case ActorType::Triangle:
-        data.indices = { 0, 1, 2 };
-        data.positions = {
-            -10.0f, -10.0f, 0.0f, 0.0f,
-            10.0f, -10.0f, 1.0f, 0.0f,
-            0.0f, 20.0f, 0.5f, 1.0f
-        };
-
-        return data;
-    case ActorType::Quad:
-        width = 15.0f;
-        height = 15.0f;
-        break;
-    case ActorType::Player:
-        data.indices = { 0, 1, 2 };
-        data.positions = {
-            -8.0f, -8.0f, 0.0f, 0.0f,
-            8.0f, -8.0f, 1.0f, 0.0f,
-            0.0f, 16.0f, 0.5f, 1.0f
-        };
-        data.texturePath = "res/textures/spaceshipNeu.bmp";
-        return data;
-        break;
-    case ActorType::AsteroidLarge:
-        width = 30.0f;
-        height = 30.0f;
-        data.texturePath = getRandomAsteroidTexture();
-        break;
-    case ActorType::AsteroidMedium:
-        width = 15.0f;
-        height = 15.0f;
-        data.texturePath = getRandomAsteroidTexture();
-        break;
-    case ActorType::AsteroidSmall:
-        width = 6.0f;
-        height = 6.0f;
-        data.texturePath = getRandomAsteroidTexture();
-        break;
-    case ActorType::ShipLarge:
-        width = 20.0f;
-        height = 10.0f;
-        data.texturePath = "res/textures/Ufo.bmp";
-        break;
-    case ActorType::ShipSmall:
-        width = 12.0f;
-        height = 6.0f;
-        data.texturePath = "res/textures/Ufo.bmp";
-        break;
-    case ActorType::Projectile:
-        width = 2.0f;
-        height = 2.0f;
-        data.texturePath = "res/textures/projektil.bmp";
-        break;
-    }
-
-    data.indices = { 0, 1, 2, 2, 3, 0 };
-    data.positions = {
-            -width, -height, 0.0f, 0.0f,
-           width, -height, 1.0f, 0.0f,
-            width, height, 1.0f, 1.0f,
-            -width, height, 0.0f, 1.0f
-    };
-
-    return data;
-}
-
 
 //TODO: Simplify
 void GameView::AddActor(unsigned int id, ActorType actorType) {
@@ -227,7 +143,7 @@ void GameView::AddActor(unsigned int id, ActorType actorType) {
 }
 
 void GameView::Render()  {
-    //TODO: make map for actor lists with their id as key instead of going by array index
+    //GLCall(glTexCoord2i(0, 0));
     unsigned int count = 0;
     for (auto& actor : this->actors) {
         actor.second.data->texture.Bind();
@@ -237,6 +153,27 @@ void GameView::Render()  {
 
         GLCall(glDrawElements(GL_TRIANGLES, actor.second.data->ib.GetCount(), GL_UNSIGNED_INT, nullptr));
         count++;
+    }
+
+    if (Text::texture) {
+        Text::texture->Bind();
+    }
+
+    for (auto& text : this->texts) {
+        int counter = 0;
+      
+        for (auto& character : text.second.characters) {
+            int row = charCoordinates[text.second.text[counter]].first;
+            int column = charCoordinates[text.second.text[counter]].second;
+      
+            //GLCall(glTexCoord2i(row * 16, column * 32));
+            character.shader.Bind();
+            character.data->va.Bind();
+            character.data->ib.Bind();
+      
+            GLCall(glDrawElements(GL_TRIANGLES, character.data->ib.GetCount(), GL_UNSIGNED_INT, nullptr));
+            counter++;
+        }
     }
 }
 

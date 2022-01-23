@@ -7,7 +7,7 @@
 Texture::Texture(const std::string& path) 
 	: m_RendererID(0), m_FilePath(path), m_LocalBuffer(nullptr), m_Width(0), m_Height(0), m_BPP(0) {
 
-	// CUSTOM .BMP IMPLEMENTATION
+	// CUSTOM .BMP IMPLEMENTATION (32-bit, uncompressed only)
 	std::ifstream stream(path, std::ios::binary);
 
 	int dataOffset;

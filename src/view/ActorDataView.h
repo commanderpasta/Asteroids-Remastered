@@ -1,22 +1,17 @@
 #pragma once
 
-#include "gl/VertexArray.h"
-#include "gl/IndexBuffer.h"
-#include "gl/Texture.h"
+#include "BaseDataView.h"
 
 #include <string>
 
-class ActorDataView {
+class ActorDataView : public BaseDataView {
 public:
-	VertexArray va;
-	VertexBuffer vb;
-	IndexBuffer ib;
 	Texture texture;
 	ActorDataView(unsigned int indices[], float positions[], unsigned int vertexCount, unsigned int positionCount, std::string& texturePath);
 	~ActorDataView();
 
 	ActorDataView(ActorDataView&& other) noexcept
-		: va(other.va), vb(other.vb), ib(other.ib), texture(other.texture) {
+		: BaseDataView(std::move(other)), texture(other.texture) {
 		other.texture.m_RendererID = 0; //Use the "null" texture for the old object.
 		other.va.m_RendererID = 0;
 		other.vb.m_RendererID = 0;

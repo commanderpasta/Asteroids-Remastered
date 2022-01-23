@@ -1,6 +1,6 @@
 #include "ActorView.h"
 
-ActorView::ActorView(std::shared_ptr<ActorDataView> data, std::string shaderPath, unsigned int id, float x, float y) 
+ActorView::ActorView(std::shared_ptr<ActorDataView> data, std::string shaderPath, unsigned int id, float x, float y)
     : data(data), shader(shaderPath), id(id) {
 
     this->shader.Bind();
@@ -19,7 +19,6 @@ ActorView::ActorView(std::shared_ptr<ActorDataView> data, std::string shaderPath
 
     this->shader.SetUniform1i("u_Texture", 0);
     this->shader.Unbind();
-
 }
 
 void ActorView::setResolution(float x, float y) {
