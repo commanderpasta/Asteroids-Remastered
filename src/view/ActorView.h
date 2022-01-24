@@ -15,7 +15,7 @@ public:
 	~ActorView();
 
 	ActorView(ActorView&& other) noexcept
-		: shader(other.shader), data(other.data), id(other.id) {
+		: shader(std::move(other.shader)), data(std::move(other.data)), id(std::move(other.id)) {
 		other.shader.m_RendererID = 0;
 	}
 

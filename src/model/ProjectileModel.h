@@ -14,4 +14,5 @@ public:
 	~ProjectileModel();
 
 	void hasBeenHit();
+	unsigned int getPointsValue();
 };

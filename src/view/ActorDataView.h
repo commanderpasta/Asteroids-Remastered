@@ -11,7 +11,7 @@ public:
 	~ActorDataView();
 
 	ActorDataView(ActorDataView&& other) noexcept
-		: BaseDataView(std::move(other)), texture(other.texture) {
+		: BaseDataView(std::move(other)), texture(std::move(other.texture)) {
 		other.texture.m_RendererID = 0; //Use the "null" texture for the old object.
 		other.va.m_RendererID = 0;
 		other.vb.m_RendererID = 0;

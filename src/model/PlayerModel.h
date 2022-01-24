@@ -22,4 +22,5 @@ public:
 
 	void hasBeenHit();
 	bool fireProjectileIfOffCooldown(steady_clock::time_point currentTime);
+	unsigned int getPointsValue();
 };

@@ -12,6 +12,7 @@
 #include "SmallShipModel.h"
 #include "LargeShipModel.h"
 
+#include "LevelSystem.h"
 #include "physics/Engine.h"
 
 #include <vector>
@@ -25,10 +26,13 @@ class GameModel {
 	std::shared_ptr<PlayerModel> player;
 	std::shared_ptr<BaseShipModel> ship;
 	PhysicsEngine physicsEngine;
+	LevelSystem levelSystem;
 	
 	steady_clock::time_point currentTime;
 	steady_clock::time_point lastPlayerDeath;
 public:
+	unsigned int score;
+
 	unsigned int windowX;
 	unsigned int windowY;
 	std::vector<std::shared_ptr<AsteroidModel>> asteroids;
@@ -65,6 +69,8 @@ public:
 	void setShipDirection();
 	void shipFireProjectile();
 
+	void checkLevel();
 
+	void addPointsFromActor(unsigned int id);
 	void checkPlayerDeath();
 };

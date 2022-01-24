@@ -17,3 +17,7 @@ float SmallShipModel::calcProjectileDirection(float playerPosition[3]) {
 void SmallShipModel::setInaccuracy(float newInaccuracy) {
 	this->shootingInaccuracy = newInaccuracy;
 }
+
+unsigned int SmallShipModel::getPointsValue() {
+	return 1000;
+}

@@ -8,4 +8,5 @@ public:
 	~MediumAsteroidModel();
 
 	void hasBeenHit();
+	unsigned int getPointsValue();
 };

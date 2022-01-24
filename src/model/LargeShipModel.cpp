@@ -11,4 +11,8 @@ float LargeShipModel::calcProjectileDirection(float playerPosition[3]) {
 	return getRandomFloat(0.0f, MY_PI * 2);
 }
 
+unsigned int LargeShipModel::getPointsValue() {
+	return 200;
+}
+
 

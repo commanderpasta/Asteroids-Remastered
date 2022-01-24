@@ -10,5 +10,10 @@ ActorModel::ActorModel(float startingPosition[3], float rotation, ActorType acto
 ActorModel::~ActorModel() {
 }
 
+unsigned int ActorModel::getPointsValue()
+{
+	return 0;
+}
+
 void ActorModel::hasBeenHit() {
 }

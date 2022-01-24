@@ -13,4 +13,5 @@ public:
 	~LargeShipModel();
 
 	float calcProjectileDirection(float playerPosition[3]);
+	unsigned int getPointsValue();
 };

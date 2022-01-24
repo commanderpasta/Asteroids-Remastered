@@ -37,19 +37,6 @@ inline ActorTypeData getActorDataFromType(ActorType type) {
     float height = 1.0f;
 
     switch (type) {
-    case ActorType::Triangle:
-        data.indices = { 0, 1, 2 };
-        data.positions = {
-            -10.0f, -10.0f, 0.0f, 0.0f,
-            10.0f, -10.0f, 1.0f, 0.0f,
-            0.0f, 20.0f, 0.5f, 1.0f
-        };
-
-        return data;
-    case ActorType::Quad:
-        width = 15.0f;
-        height = 15.0f;
-        break;
     case ActorType::Character:
         width = 30.0f;
         height = 60.0f;

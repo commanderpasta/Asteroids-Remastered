@@ -14,5 +14,6 @@ public:
 	ActorModel(float startingPosition[3], float rotation, ActorType actorType);
 	~ActorModel();
 
+	virtual unsigned int getPointsValue();
 	virtual void hasBeenHit();
 };

@@ -15,6 +15,7 @@ void GameController::Setup() {
 
 void GameController::Loop() {
     this->model->Setup();
+    this->view.setup();
 
     while (!view.ShouldWindowClose())
     {
@@ -25,6 +26,8 @@ void GameController::Loop() {
         this->model->checkProjectileLifetimes();
         this->model->setShipDirection();
         this->model->checkShipLifetime();
+
+        this->model->checkLevel();
 
         this->model->checkPlayerDeath();
         this->model->shipFireProjectile();

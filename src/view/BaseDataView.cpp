@@ -13,8 +13,6 @@ BaseDataView::BaseDataView(unsigned int indices[], float positions[], unsigned i
 
     this->va.AddBuffer(this->vb, layout);
 
-    //this->texture.Bind();
-
     this->va.Unbind();
     this->vb.Unbind();
     this->ib.Unbind();

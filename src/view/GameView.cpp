@@ -2,8 +2,6 @@
 
 #include <iostream>
 
-int counterr = 0;
-
 GameView::GameView(std::shared_ptr<GameModel> model) : model(model), window(nullptr) {
     /* Initialize the library */
     glfwInit();
@@ -29,8 +27,21 @@ GameView::GameView(std::shared_ptr<GameModel> model) : model(model), window(null
 
     GLCall(glEnable(GL_BLEND));
     GLCall(glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA));
+}
 
+void GameView::setup() {
     Text::setup();
+
+    std::vector<ActorType> typeList = { ActorType::Player, ActorType::AsteroidLarge, ActorType::AsteroidMedium, ActorType::AsteroidSmall, ActorType::ShipLarge, ActorType::ShipSmall, ActorType::Projectile, ActorType::Character };
+
+    for (auto& type : typeList) {
+        ActorTypeData typeData = getActorDataFromType(type);
+        std::shared_ptr<ActorDataView> renderData = std::make_shared<ActorDataView>(typeData.indices.data(), typeData.positions.data(), typeData.positions.size() / 2, typeData.positions.size(), typeData.texturePath);
+
+        this->actorDataPerType.insert({type, std::move(renderData) });
+    }
+
+    //this->AddText(0, std::to_string(this->model->score), this->model->windowX * 0.1f, this->model->windowY * 0.9f);
 }
 
 GameView::~GameView() {
@@ -81,13 +92,6 @@ std::vector<std::string> GameView::GetInput() {
     else if (glfwGetKey(this->window, GLFW_KEY_A) == GLFW_PRESS) {
         keyboardEvents.push_back("LEFT");
     }
-    if (glfwGetKey(this->window, GLFW_KEY_H) == GLFW_PRESS) {
-        keyboardEvents.push_back("H");
-        if (counterr == 0) {
-            this->AddText(900, "DAVID IST EIN KEK", 50.0f, 50.0f);
-            counterr++;
-        }
-    }
 
     return keyboardEvents;
 }
@@ -98,52 +102,34 @@ void GameView::AddText(unsigned int id, std::string text, float x, float y) {
     this->texts.insert({id, std::move(newText)});
 }
 
+void GameView::removeText(unsigned int id) {
+    this->texts.erase(id);
+}
+
 //TODO: Simplify
 void GameView::AddActor(unsigned int id, ActorType actorType) {
     ActorTypeData typeData = getActorDataFromType(actorType);
 
-    if (this->actorDataPerType.count(actorType) == 1) {
-        auto test = this->actorDataPerType[actorType];
-
-        if (typeData.texturePath == test->texture.getFilePath()) {
-            ActorView newActor(actorDataPerType.find(actorType)->second, typeData.shaderPath, id, this->model->windowX, this->model->windowY);
-            this->actors.insert({ id, std::move(newActor) });
-        }
-        else {
-            if (actorType == ActorType::Triangle) {
-                std::shared_ptr<ActorDataView> newActorType = std::make_shared<ActorDataView>(typeData.indices.data(), typeData.positions.data(), 6, typeData.positions.size(), typeData.texturePath);
-                this->actorDataPerType.insert({ actorType, newActorType });
-
-                ActorView newActor(newActorType, typeData.shaderPath, id, this->model->windowX, this->model->windowY);
+    if (this->actorDataPerType.count(actorType) >= 1) {
+        auto range = this->actorDataPerType.equal_range(actorType);
+        for (auto& it = range.first; it != range.second; ++it) {
+            if (it->second->texture.getFilePath() == typeData.texturePath) {
+                ActorView newActor(it->second, typeData.shaderPath, id, this->model->windowX, this->model->windowY);
                 this->actors.insert({ id, std::move(newActor) });
+
+                return;
             }
-            else {
-                std::shared_ptr<ActorDataView> newActorType = std::make_shared<ActorDataView>(typeData.indices.data(), typeData.positions.data(), 8, typeData.positions.size(), typeData.texturePath);
-                this->actorDataPerType.insert({ actorType, newActorType });
-
-                ActorView newActor(newActorType, typeData.shaderPath, id, this->model->windowX, this->model->windowY);
-                this->actors.insert({ id, std::move(newActor) });
-            }
-        }
-    } else {
-        if (actorType == ActorType::Triangle) {
-            std::shared_ptr<ActorDataView> newActorType = std::make_shared<ActorDataView>(typeData.indices.data(), typeData.positions.data(), 6, typeData.positions.size(), typeData.texturePath);
-            this->actorDataPerType.insert({ actorType, newActorType });
-
-            ActorView newActor(newActorType, typeData.shaderPath, id, this->model->windowX, this->model->windowY);
-            this->actors.insert({ id, std::move(newActor) });
-        } else {
-            std::shared_ptr<ActorDataView> newActorType = std::make_shared<ActorDataView>(typeData.indices.data(), typeData.positions.data(), 8, typeData.positions.size(), typeData.texturePath);
-            this->actorDataPerType.insert({ actorType, newActorType });
-
-            ActorView newActor(newActorType, typeData.shaderPath, id, this->model->windowX, this->model->windowY);
-            this->actors.insert({ id, std::move(newActor) });
         }
     }
+
+    std::shared_ptr<ActorDataView> newActorType = std::make_shared<ActorDataView>(typeData.indices.data(), typeData.positions.data(), typeData.positions.size() / 2, typeData.positions.size(), typeData.texturePath);
+    this->actorDataPerType.insert({ actorType, newActorType });
+
+    ActorView newActor(newActorType, typeData.shaderPath, id, this->model->windowX, this->model->windowY);
+    this->actors.insert({ id, std::move(newActor) });
 }
 
-void GameView::Render()  {
-    //GLCall(glTexCoord2i(0, 0));
+void GameView::Render() {
     unsigned int count = 0;
     for (auto& actor : this->actors) {
         actor.second.data->texture.Bind();
@@ -157,22 +143,21 @@ void GameView::Render()  {
 
     if (Text::texture) {
         Text::texture->Bind();
-    }
 
-    for (auto& text : this->texts) {
-        int counter = 0;
-      
-        for (auto& character : text.second.characters) {
-            int row = charCoordinates[text.second.text[counter]].first;
-            int column = charCoordinates[text.second.text[counter]].second;
-      
-            //GLCall(glTexCoord2i(row * 16, column * 32));
-            character.shader.Bind();
-            character.data->va.Bind();
-            character.data->ib.Bind();
-      
-            GLCall(glDrawElements(GL_TRIANGLES, character.data->ib.GetCount(), GL_UNSIGNED_INT, nullptr));
-            counter++;
+        for (auto& text : this->texts) {
+            int counter = 0;
+
+            for (auto& character : text.second.characters) {
+                int row = charCoordinates[text.second.text[counter]].first;
+                int column = charCoordinates[text.second.text[counter]].second;
+
+                character.shader.Bind();
+                character.data->va.Bind();
+                character.data->ib.Bind();
+
+                GLCall(glDrawElements(GL_TRIANGLES, character.data->ib.GetCount(), GL_UNSIGNED_INT, nullptr));
+                counter++;
+            }
         }
     }
 }
@@ -196,6 +181,10 @@ void GameView::Update() {
         // update actor position in view
         this->actors.find(currentActorModel.first)->second.SetPosition(currentActorModel.second->position, currentActorModel.second->rotation);
     }
+
+    //score
+    this->removeText(0);
+    this->AddText(0, std::to_string(this->model->score), this->model->windowX * 0.1f, this->model->windowY * 0.9f);
 }
 
 void GameView::Clear() const {

@@ -1,7 +1,7 @@
 #include "Text.h"
 
-Character::Character(std::shared_ptr<BaseDataView> data, std::string shaderPath, unsigned int id, float x, float y)
-    : data(data), shader(shaderPath), id(id) {
+Character::Character(std::shared_ptr<BaseDataView> data, std::string shaderPath, float x, float y)
+    : data(data), shader(shaderPath) {
 
     this->shader.Bind();
 
@@ -19,7 +19,6 @@ Character::Character(std::shared_ptr<BaseDataView> data, std::string shaderPath,
 
     this->shader.SetUniform1i("u_Texture", 0);
     this->shader.Unbind();
-
 }
 
 void Character::setResolution(float x, float y) {
@@ -74,12 +73,6 @@ Text::Text(unsigned int id, std::string text, float x, float y, float windowX, f
 
 	ActorTypeData typeData = getActorDataFromType(ActorType::Character);
 	for (auto& c : this->text) {
-        /*
-                -width, -height, 0.0f, 0.0f,
-               width, -height, 1.0f, 0.0f,
-                width, height, 1.0f, 1.0f,
-                -width, height, 0.0f, 1.0f
-        */
         auto column = charCoordinates[c].second;
         auto row = charCoordinates[c].first;
 
@@ -92,7 +85,7 @@ Text::Text(unsigned int id, std::string text, float x, float y, float windowX, f
 
         auto vertexData = std::make_shared<BaseDataView>(typeData.indices.data(), typeData.positions.data(), 8, typeData.positions.size());
 
-		Character charRenderData(std::move(vertexData), typeData.shaderPath, this->id + counter + 1, windowX, windowY);
+		Character charRenderData(std::move(vertexData), typeData.shaderPath, windowX, windowY);
         float position[3] = { x + counter * 60, y, 0 };
         charRenderData.SetPosition(position, 0.0f);
         this->characters.push_back(std::move(charRenderData));

@@ -1,27 +1,37 @@
 #include "GameModel.h"
 
-GameModel::GameModel(unsigned int windowX, unsigned int windowY) 
-	: windowX(windowX), windowY(windowY), physicsEngine(windowX, windowY) {
+GameModel::GameModel(unsigned int windowX, unsigned int windowY)
+	: windowX(windowX), currentTime(steady_clock::now()), levelSystem(currentTime), windowY(windowY), physicsEngine(windowX, windowY), score(0) {
 }
 GameModel::~GameModel() {
 }
 
 void GameModel::Setup() {
-	this->setCurrentTime();
-
 	float initialPlayerPosition[3] = { 200.0f, 200.0f, 0.0f };
 	this->AddPlayer(initialPlayerPosition, 0.0f);
-
-	for (int i = 0; i < 5; i++) {
-		float initialAsteroidPosition[3] = { getRandomFloat(0.0f, windowX), getRandomFloat(0.0f, windowY), 0.0f };
-		this->AddAsteroid(initialAsteroidPosition);
-	}
-
-	this->addShip(true);
 }
 
 void GameModel::setCurrentTime() {
 	this->currentTime = steady_clock::now();
+}
+
+void GameModel::checkLevel() {
+	if (this->levelSystem.isLevelActive && this->asteroids.size() == 0 && this->mediumAsteroids.size() == 0 && this->smallAsteroids.size() == 0) {
+		this->levelSystem.nextLevel(this->currentTime);
+	}
+
+	if (!this->levelSystem.isLevelActive && this->levelSystem.canStartLevel(currentTime)) {
+		unsigned int spawnAsteroidCount = this->levelSystem.getAmountOfAsteroidSpawns();
+
+		for (int i = 0; i < spawnAsteroidCount; i++) {
+			float initialAsteroidPosition[3] = { getRandomFloat(0.0f, windowX), getRandomFloat(0.0f, windowY), 0.0f };
+			this->AddAsteroid(initialAsteroidPosition);
+		}
+
+		if (this->levelSystem.canShipSpawn(this->currentTime)) {
+			this->addShip(rand() % 2);
+		}
+	}
 }
 
 void GameModel::AddPlayer(float startingPosition[3], float rotation) {
@@ -203,14 +213,26 @@ void GameModel::updatePositions() {
 	}
 }
 
+void GameModel::addPointsFromActor(unsigned int id) {
+	auto actor = this->actors.find(id);
+
+	if (actor != this->actors.end()) {
+		this->score += actor->second->getPointsValue();
+	}
+	else {
+		std::cout << "Could not add points from actor with id " << id << "." << std::endl;
+	}
+}
+
 void GameModel::checkCollisionWithProjectile(unsigned int projectileId, unsigned int targetId) {
 	auto projectile = std::dynamic_pointer_cast<ProjectileModel>(this->actors[projectileId]);
 
 	if (this->player && this->player->id == targetId && this->player->id == projectile->ownerId || this->ship && this->ship->id == targetId && this->ship->id == projectile->ownerId) {
 		return;
 	} else {
-		this->removeActor(targetId);
 		this->removeActor(projectileId);
+		this->addPointsFromActor(targetId);
+		this->removeActor(targetId);
 	}
 }
 
@@ -227,9 +249,6 @@ void GameModel::checkCollisions() {
 				this->checkCollisionWithProjectile(collisionPairIds.second, collisionPairIds.first);
 			}
 			else {
-				this->actors[collisionPairIds.first]->hasBeenHit();
-				this->actors[collisionPairIds.second]->hasBeenHit();
-
 				this->removeActor(collisionPairIds.first);
 				this->removeActor(collisionPairIds.second);
 			}

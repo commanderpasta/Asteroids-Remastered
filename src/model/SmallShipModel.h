@@ -16,4 +16,5 @@ public:
 
 	float calcProjectileDirection(float playerPosition[3]);
 	void setInaccuracy(float newInaccuracy);
+	unsigned int getPointsValue();
 };

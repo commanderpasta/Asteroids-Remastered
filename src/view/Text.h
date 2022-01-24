@@ -13,15 +13,14 @@
 
 class Character {
 public:
-	unsigned int id;
 	Shader shader;
 	std::shared_ptr<BaseDataView> data;
 
-	Character(std::shared_ptr<BaseDataView> data, std::string shaderPath, unsigned int id, float x, float y);
+	Character(std::shared_ptr<BaseDataView> data, std::string shaderPath, float x, float y);
 	~Character();
 
 	Character(Character&& other) noexcept
-		: shader(other.shader), data(other.data), id(other.id) {
+		: shader(std::move(other.shader)), data(std::move(other.data)) {
 		other.shader.m_RendererID = 0;
 	}
 
@@ -36,7 +35,6 @@ public:
 
 	void SetPosition(float position[3], float angle);
 	void setResolution(float x, float y);
-
 };
 
 class Text {

@@ -29,3 +29,7 @@ bool PlayerModel::fireProjectileIfOffCooldown(steady_clock::time_point currentTi
 
 	return false;
 }
+
+unsigned int PlayerModel::getPointsValue() {
+	return 0;
+}
