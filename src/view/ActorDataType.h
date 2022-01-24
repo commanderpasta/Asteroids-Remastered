@@ -47,6 +47,7 @@ inline ActorTypeData getActorDataFromType(ActorType type) {
                 width, height, 1.0f, 1.0f,
                 -width, height, 0.0f, 1.0f
         };
+        data.shaderPath = "res/shaders/Text.shader";
         return data;
     case ActorType::Player:
         data.indices = { 0, 1, 2 };

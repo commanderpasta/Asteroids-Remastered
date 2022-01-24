@@ -77,15 +77,19 @@ Text::Text(unsigned int id, std::string text, float x, float y, float windowX, f
         auto row = charCoordinates[c].first;
 
         typeData.positions = {
-                -30.0f, -60.0f, column * 0.125f, 0.875f - row * 0.125f,
-               30.0f, -60.0f, column * 0.125f + 0.125f, 0.875f - row * 0.125f,
-                30.0f, 60.0f, column * 0.125f + 0.125f, 0.875f - row  * 0.125f + 0.125f,
-                -30.0f, 60.0f, column * 0.125f, 0.875f - row * 0.125f + 0.125f
+            -30.0f, -60.0f, 0.0f, 0.875f,
+            30.0f, -60.0f, 0.125f, 0.875f,
+            30.0f, 60.0f, 0.125f, 1.0f,
+            -30.0f, 60.0f, 0.0f, 1.0f
         };
 
         auto vertexData = std::make_shared<BaseDataView>(typeData.indices.data(), typeData.positions.data(), 8, typeData.positions.size());
 
 		Character charRenderData(std::move(vertexData), typeData.shaderPath, windowX, windowY);
+
+        charRenderData.shader.Bind();
+        charRenderData.shader.SetUniform2f("u_texCoordShift", column * 0.125f, - (row * 0.125f));
+
         float position[3] = { x + counter * 60, y, 0 };
         charRenderData.SetPosition(position, 0.0f);
         this->characters.push_back(std::move(charRenderData));

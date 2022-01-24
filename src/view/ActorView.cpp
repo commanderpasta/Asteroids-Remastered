@@ -57,10 +57,10 @@ void ActorView::SetPosition(float position[3], float angle) {
     }
 
     float rotationMatrix[4][4] = {
-    {cosf(angle), sinf(angle), 0.0f, 0.0f},
-    {-sinf(angle), cosf(angle), 0.0f, 0.0f},
-    {0.0f, 0.0f, 1.0f, 0.0f},
-    {0.0f, 0.0f, 0.0f, 1.0f}
+        {cosf(angle), sinf(angle), 0.0f, 0.0f},
+        {-sinf(angle), cosf(angle), 0.0f, 0.0f},
+        {0.0f, 0.0f, 1.0f, 0.0f},
+        {0.0f, 0.0f, 0.0f, 1.0f}
     };
 
     this->shader.SetUniformMat4f("u_T", translationMatrix);

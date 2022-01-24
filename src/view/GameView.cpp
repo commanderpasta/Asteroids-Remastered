@@ -183,7 +183,12 @@ void GameView::Update() {
     }
 
     //score
-    this->removeText(0);
+    auto score = this->texts.find(0);
+
+    if (score != this->texts.end()) {
+        this->removeText(0);
+    }
+
     this->AddText(0, std::to_string(this->model->score), this->model->windowX * 0.1f, this->model->windowY * 0.9f);
 }
 
