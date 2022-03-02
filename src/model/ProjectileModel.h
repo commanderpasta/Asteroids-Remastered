@@ -10,7 +10,7 @@ public:
 	steady_clock::time_point timeOfSpawn;
 	static float radius;
 	unsigned int ownerId;
-	ProjectileModel(float startingPosition[3], steady_clock::time_point currentTime, unsigned int ownerId);
+	ProjectileModel(float startingPosition[3], steady_clock::time_point currentFrameTime, unsigned int ownerId);
 	~ProjectileModel();
 
 	void hasBeenHit();

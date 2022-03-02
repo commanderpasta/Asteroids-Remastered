@@ -1,6 +1,6 @@
 #include "AsteroidModel.h"
 
-float AsteroidModel::radius = 20.0f;
+float AsteroidModel::radius = 30.0f;
 
 AsteroidModel::AsteroidModel(float startingPosition[3])
 	: ActorModel(startingPosition, 0, ActorType::AsteroidLarge) {

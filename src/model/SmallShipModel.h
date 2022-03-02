@@ -11,6 +11,8 @@ class SmallShipModel : public BaseShipModel {
 private:
 	float shootingInaccuracy;
 public:
+	static float radius;
+
 	SmallShipModel(float startingPosition[3], steady_clock::time_point timeOfSpawn, bool isDirectionLeft);
 	~SmallShipModel();
 

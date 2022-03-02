@@ -7,6 +7,7 @@
 
 class ActorView {
 public: 
+	bool isHidden;
 	unsigned int id;
 	Shader shader;
 	std::shared_ptr<ActorDataView> data;
@@ -15,7 +16,7 @@ public:
 	~ActorView();
 
 	ActorView(ActorView&& other) noexcept
-		: shader(std::move(other.shader)), data(std::move(other.data)), id(std::move(other.id)) {
+		: shader(std::move(other.shader)), data(std::move(other.data)), id(std::move(other.id)), isHidden(other.isHidden) {
 		other.shader.m_RendererID = 0;
 	}
 
@@ -30,4 +31,5 @@ public:
 
 	void SetPosition(float position[3], float angle);
 	void setResolution(float x, float y);
+	void setHidden(bool isHidden);
 };

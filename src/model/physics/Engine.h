@@ -1,12 +1,13 @@
 #pragma once
 
+#include <model/Maths.h>
+
 #include <memory>
 #include <vector>
 #include <iostream>
 
-#include <model/Maths.h>
-
 #define DELTA 0.03f
+#define TICK_RATE 144
 
 enum class AccelerationType { Linear, None };
 
@@ -62,6 +63,6 @@ public:
 	void rotatePlayerLeft();
 	void rotatePlayerRight();
 
-	std::vector <std::tuple<unsigned int, float, float, float>> updatePositions();
+	std::vector <std::tuple<unsigned int, float, float, float>> updatePositions(unsigned int ticksPassed);
 	std::vector<std::pair<unsigned int, unsigned int>> checkCollisions(); //returns pairs of ids with colliding objects
 };

@@ -2,7 +2,7 @@
 
 float BaseShipModel::radius = 20.0f;
 BaseShipModel::BaseShipModel(float startingPosition[3], steady_clock::time_point timeOfSpawn, bool startOnLeft, ActorType shipType)
-	: ActorModel(startingPosition, 0, shipType), lastChangeOfDirection(timeOfSpawn), projectileCooldown(std::chrono::steady_clock::now() + std::chrono::seconds(0)), activeProjectileCount(0) {
+	: ActorModel(startingPosition, 0, shipType), lastChangeOfDirection(timeOfSpawn), projectileCooldown(timeOfSpawn), activeProjectileCount(0) {
 	if (startOnLeft) {
 		this->movingState = MovingState::Right;
 		this->baseDirection = MovingState::Right;

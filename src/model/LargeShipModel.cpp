@@ -1,5 +1,7 @@
 #include "LargeShipModel.h"
 
+float LargeShipModel::radius = 10.0f;
+
 LargeShipModel::LargeShipModel(float startingPosition[3], steady_clock::time_point timeOfSpawn, bool startOnLeft) 
 	: BaseShipModel(startingPosition, timeOfSpawn, startOnLeft, ActorType::ShipLarge) {
 }

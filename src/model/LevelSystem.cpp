@@ -1,7 +1,6 @@
 #include "LevelSystem.h"
 
-LevelSystem::LevelSystem(steady_clock::time_point currentTime) : currentLevel(0), lastTimeShipSpawned(currentTime + seconds(30)), levelChangePause(currentTime), isLevelActive(true) {
-
+LevelSystem::LevelSystem() : currentLevel(0), isLevelActive(true) {
 }
 
 unsigned int LevelSystem::getAmountOfAsteroidSpawns() {
@@ -14,28 +13,38 @@ unsigned int LevelSystem::getAmountOfAsteroidSpawns() {
 	}
 }
 
-void LevelSystem::nextLevel(steady_clock::time_point currentTime) {
+void LevelSystem::nextLevel(steady_clock::time_point currentFrameTime) {
 	this->currentLevel++;
 	this->isLevelActive = false;
-	this->levelChangePause = currentTime;
+	this->levelChangePause = currentFrameTime;
 }
 
-bool LevelSystem::canShipSpawn(steady_clock::time_point currentTime) {
-	duration<double> timeSpan = duration_cast<duration<double>>(currentTime - this->lastTimeShipSpawned);
+bool LevelSystem::canShipSpawn(steady_clock::time_point currentFrameTime) {
+	duration<double> timeSpan = duration_cast<duration<double>>(currentFrameTime - this->lastTimeShipSpawned);
 	if (timeSpan.count() > 30.0) {
-		this->lastTimeShipSpawned = currentTime;
+		this->lastTimeShipSpawned = currentFrameTime;
 		return true;
 	}
 
 	return false;
 }
 
-bool LevelSystem::canStartLevel(steady_clock::time_point currentTime) {
-	duration<double> timeSpan = duration_cast<duration<double>>(currentTime - this->levelChangePause);
+int LevelSystem::getCurrentLevel() {
+	return this->currentLevel;
+}
+
+bool LevelSystem::canStartLevel(steady_clock::time_point currentFrameTime) {
+	duration<double> timeSpan = duration_cast<duration<double>>(currentFrameTime - this->levelChangePause);
 	if (timeSpan.count() > 2.0) {
 		this->isLevelActive = true;
 		return true;
 	}
 
 	return false;
+}
+
+void LevelSystem::setBeginTime(steady_clock::time_point currentFrameTime) {
+	this->lastTimeShipSpawned = currentFrameTime;
+	this->lastTimeShipSpawned -= seconds{ 25 };
+	this->levelChangePause = currentFrameTime;
 }

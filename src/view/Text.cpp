@@ -76,6 +76,7 @@ Text::Text(unsigned int id, std::string text, float x, float y, float windowX, f
         auto column = charCoordinates[c].second;
         auto row = charCoordinates[c].first;
 
+        //todo optimize
         typeData.positions = {
             -15.0f, -30.0f, 0.0f, 0.875f,
             15.0f, -30.0f, 0.125f, 0.875f,

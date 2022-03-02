@@ -8,11 +8,13 @@ class LevelSystem {
 	steady_clock::time_point lastTimeShipSpawned;
 	steady_clock::time_point levelChangePause;
 public:
-	LevelSystem(steady_clock::time_point currentTime);
+	LevelSystem();
 	bool isLevelActive;
 	
 	unsigned int getAmountOfAsteroidSpawns();
-	void nextLevel(steady_clock::time_point currentTime);
-	bool canShipSpawn(steady_clock::time_point currentTime);
-	bool canStartLevel(steady_clock::time_point currentTime);
+	void nextLevel(steady_clock::time_point currentFrameTime);
+	bool canShipSpawn(steady_clock::time_point currentFrameTime);
+	bool canStartLevel(steady_clock::time_point currentFrameTime);
+	void setBeginTime(steady_clock::time_point currentFrameTime);
+	int getCurrentLevel();
 };

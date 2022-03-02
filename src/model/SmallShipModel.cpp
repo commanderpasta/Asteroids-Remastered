@@ -1,6 +1,8 @@
 #include "SmallShipModel.h"
 
-SmallShipModel::SmallShipModel(float startingPosition[3], steady_clock::time_point timeOfSpawn, bool startOnLeft)
+float SmallShipModel::radius = 6.0f;
+
+SmallShipModel::SmallShipModel(float startingPosition[3], steady_clock::time_point timeOfSpawn, bool startOnLeft) //, float inaccuracyInRad
 	: BaseShipModel(startingPosition, timeOfSpawn, startOnLeft, ActorType::ShipSmall), shootingInaccuracy(0.0f) {
 }
 

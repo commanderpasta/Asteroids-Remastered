@@ -6,10 +6,12 @@ class GameController {
 public:
     std::shared_ptr<GameModel> model;
     GameView view;
+    DirectSound soundApi;
 
     GameController(std::shared_ptr<GameModel> model);
     ~GameController();
 
-    void Setup();
-    void Loop();
+    void setupSound();
+    void updateSound();
+    void update();
 };

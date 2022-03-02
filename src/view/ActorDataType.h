@@ -89,6 +89,25 @@ inline ActorTypeData getActorDataFromType(ActorType type) {
         height = 2.0f;
         data.texturePath = "res/textures/projektil.bmp";
         break;
+    case ActorType::Particle:
+        width = 2.0f;
+        height = 2.0f;
+        data.texturePath = "res/textures/projektil.bmp";
+        break;
+    case ActorType::PlayerParticle:
+        width = 2.0f;
+        height = 2.0f;
+        data.texturePath = "res/textures/projektil.bmp";
+        break;
+    case ActorType::Booster:
+        data.indices = { 0, 1, 2 };
+        data.positions = {
+            -3.0f, -3.0f, 0.0f, 0.0f,
+            3.0f, -3.0f, 1.0f, 0.0f,
+            0.0f, 10.0f, 0.5f, 1.0f
+        };
+        data.texturePath = "res/textures/spaceshipNeu.bmp";
+        return data;
     }
 
     data.indices = { 0, 1, 2, 2, 3, 0 };

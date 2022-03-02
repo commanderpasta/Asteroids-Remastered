@@ -5,6 +5,8 @@ ActorView::ActorView(std::shared_ptr<ActorDataView> data, std::string shaderPath
 
     this->shader.Bind();
 
+    this->isHidden = false;
+
     this->setResolution(x, y);
 
     float identityMatrix[4][4] = {
@@ -66,4 +68,8 @@ void ActorView::SetPosition(float position[3], float angle) {
     this->shader.SetUniformMat4f("u_T", translationMatrix);
     this->shader.SetUniformMat4f("u_R", rotationMatrix);
     this->shader.Unbind();
+}
+
+void ActorView::setHidden(bool isHidden) {
+    this->isHidden = isHidden;
 }

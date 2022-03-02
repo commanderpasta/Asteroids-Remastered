@@ -44,7 +44,7 @@ void PhysicsEngine::removeActor(unsigned int id) {
 	}
 }
 
-std::vector <std::tuple<unsigned int, float, float, float>> PhysicsEngine::updatePositions() {
+std::vector <std::tuple<unsigned int, float, float, float>> PhysicsEngine::updatePositions(unsigned int ticksPassed) {
 
 	std::vector <std::tuple<unsigned int, float, float, float>> calculatedPositions;
 
@@ -57,20 +57,24 @@ std::vector <std::tuple<unsigned int, float, float, float>> PhysicsEngine::updat
 				actor->velocityX = 0.0f;
 				actor->velocityY = 0.0f;
 			} else {
+				// deacceleration
 				if (actor->currentSpeed > 0.0f && actor->deacceleration != 0.0f) {
 					float velocityXNormalized = actor->velocityX / actor->currentSpeed;
 					float velocityYNormalized = actor->velocityY / actor->currentSpeed;
 
 					actor->deacceleration = actor->currentSpeed * 0.005f;
-					actor->currentSpeed = std::max(0.0f, actor->currentSpeed - actor->deacceleration);
+					actor->currentSpeed = std::max(0.0f, actor->currentSpeed - (actor->deacceleration));
 
 					actor->velocityX = actor->currentSpeed * velocityXNormalized;
 					actor->velocityY = actor->currentSpeed * velocityYNormalized;
 				}
 
+				// acceleration
 				actor->velocityX += actor->deltaVelocity * sin(actor->direction);
 				actor->velocityY += actor->deltaVelocity * cos(actor->direction);
 
+				
+				// max speed
 				if (actor->currentSpeed > 0.0f) {
 					float velocityXNormalized = actor->velocityX / actor->currentSpeed;
 					float velocityYNormalized = actor->velocityY / actor->currentSpeed;
@@ -162,8 +166,8 @@ std::vector<std::pair<unsigned int, unsigned int>> PhysicsEngine::checkCollision
 
 		for (auto& actorWithHitboxRegistration : this->actorsWithHitboxRegistration) {
 			if (actor->id != actorWithHitboxRegistration->id) {
-				auto dx = (actorWithHitboxRegistration->x + actorWithHitboxRegistration->collisionRadius) - (actor->x + actor->collisionRadius);
-				auto dy = (actorWithHitboxRegistration->y + actorWithHitboxRegistration->collisionRadius) - (actor->y + actor->collisionRadius);
+				auto dx = actorWithHitboxRegistration->x - actor->x;
+				auto dy = actorWithHitboxRegistration->y - actor->y;
 				auto distance = sqrt(dx * dx + dy * dy);
 
 				if (distance < (actorWithHitboxRegistration->collisionRadius + actor->collisionRadius)) {

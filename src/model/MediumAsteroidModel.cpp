@@ -1,7 +1,7 @@
 #include "MediumAsteroidModel.h"
 
 
-float MediumAsteroidModel::radius = 20.0f;
+float MediumAsteroidModel::radius = 15.0f;
 
 MediumAsteroidModel::MediumAsteroidModel(float startingPosition[3])
 	: ActorModel(startingPosition, 0, ActorType::AsteroidMedium) {

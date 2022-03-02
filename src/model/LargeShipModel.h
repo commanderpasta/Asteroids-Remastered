@@ -9,6 +9,8 @@ using namespace std::chrono;
 
 class LargeShipModel : public BaseShipModel {
 public:
+	static float radius;
+
 	LargeShipModel(float startingPosition[3], steady_clock::time_point timeOfSpawn, bool isDirectionLeft);
 	~LargeShipModel();
 
