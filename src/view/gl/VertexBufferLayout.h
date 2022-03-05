@@ -24,6 +24,14 @@ struct VertexBufferElement {
 	}
 };
 
+template <typename T>
+constexpr bool always_false = false;
+
+/**
+ * Describes a layout to be used when creating a vertex array. 
+ * 
+ * It provides correct strides for different data types and vertex counts, when setting vertex attribute pointers.
+ */
 class VertexBufferLayout {
 private:
 	std::vector<VertexBufferElement> m_Elements;
@@ -34,7 +42,7 @@ public:
 
 	template<typename T>
 	void Push(unsigned int count) {
-		static_assert(false);
+		static_assert(always_false<T>, "must use correct specialization");
 	}
 
 	template<>

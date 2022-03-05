@@ -5,8 +5,16 @@
 #include <chrono>
 using namespace std::chrono;
 
+/**
+ * Describes the current state of a ship in the movement loop.
+ */
 enum class MovingState { Left, Right, LeftUp, LeftDown, RightUp, RightDown };
 
+/**
+ * Base class for representing ships in Asteroids.
+ * 
+ * Contains the movement logic that is shared between large and small ships.
+ */
 class BaseShipModel : public ActorModel {
 	MovingState movingState;
 	MovingState baseDirection;

@@ -6,6 +6,11 @@
 
 #include <string>
 
+/**
+ * Base class that wraps all vertex data for an object that can be drawn in the application.
+ *
+ * Can be reused across multiple object instances for better performance.
+ */
 class BaseDataView {
 public:
 	VertexArray va;

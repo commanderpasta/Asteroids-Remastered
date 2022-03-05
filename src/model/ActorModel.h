@@ -4,6 +4,11 @@
 
 #include <string>
 
+/**
+ * Base class for every in-game actor. 
+ *
+ * Includes position data.
+ */
 class ActorModel {
 public:
 	unsigned int id;

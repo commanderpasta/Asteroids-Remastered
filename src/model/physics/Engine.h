@@ -7,11 +7,23 @@
 #include <iostream>
 
 #define DELTA 0.03f
-#define TICK_RATE 144
+#define TICK_RATE 60
 
-enum class AccelerationType { Linear, None };
+/**
+ * Used to differentiate between different acceleration models for a game object.
+ *
+ */
+enum class AccelerationType { Linear, Constant };
 
+/**
+ * Manages the physical properties of game objects.
+ *
+ * Contains movement calculations and collision detection.
+ */
 class PhysicsEngine {
+	/**
+	 * Describes the physical properties of a game object.
+	 */
 	class PhysicsObject {
 	public:
 		//positions

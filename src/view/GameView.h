@@ -16,7 +16,11 @@
 #include <memory>
 #include <map>
 
-
+/**
+ * View component of the game loop following the MVC pattern.
+ * 
+ * Includes rendering game object and UI, as well as a window context using GLFW and GLEW.
+ */
 class GameView {
 	GLFWwindow *window;
 	std::shared_ptr<GameModel> model;

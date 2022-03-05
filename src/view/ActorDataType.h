@@ -5,7 +5,6 @@
 #include <string>
 #include <vector>
 
-
 struct ActorTypeData {
     std::string texturePath;
     std::string shaderPath;

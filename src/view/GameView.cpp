@@ -18,7 +18,7 @@ GameView::GameView(std::shared_ptr<GameModel> model) : model(model), window(null
     glfwMakeContextCurrent(this->window);
 
     /* Tie frame rate to monitor refresh rate */
-    glfwSwapInterval(1);
+    glfwSwapInterval(0);
 
     if (glewInit() != GLEW_OK) {
         std::cout << "Error!" << std::endl;
@@ -105,7 +105,6 @@ std::vector<std::string> GameView::GetInput() {
 
     return keyboardEvents;
 }
-
 
 void GameView::AddText(unsigned int id, std::string text, float x, float y) {
     Text newText(id, text, x, y, this->model->windowX, this->model->windowY);

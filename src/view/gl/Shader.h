@@ -8,6 +8,14 @@ struct ShaderProgramSource {
 	std::string FragmentSource;
 };
 
+/**
+ * A C++ wrapper for shader programs used in OpenGL.
+ *
+ * Loads a shader program from a shader source file, can be modified with uniform setters,
+ * to allow for freely structured shader code.
+ *
+ * The shaders include color and position data.
+ */
 class Shader {
 private:
 	std::string m_FilePath;

@@ -49,58 +49,78 @@ void GameController::update() {
     this->view.setup();
     this->setupSound();
 
+    const int TICKS_PER_SECOND = 60;
+    const int SKIP_TICKS = 1000 / TICKS_PER_SECOND;
+    const int MAX_FRAMESKIP = 10;
+
+    auto nextGameTick = this->model->currentFrameTime;
+    auto lastRenderTick = this->model->currentFrameTime;
+
+    bool isGameOver = false;
+
     while (!view.ShouldWindowClose())
     {
         // Render here
         this->view.Clear();
+        
 
-        this->model->setCurrentTime();
-
-        if (this->model->playerLives == 0) {
+        if (isGameOver) {
             break; //TODO: END SCREEN
         }
 
-        this->model->checkParticleLifetimes();
-        this->model->checkProjectileLifetimes();
-        this->model->setShipDirection();
-        this->model->checkShipLifetime();
+        int loops = 0;
+        while (steady_clock::now() > nextGameTick && loops < MAX_FRAMESKIP) {
+            this->model->setCurrentTime();
 
-        this->model->checkLevel();
+            if (this->model->playerLives == 0) {
+                isGameOver = true; //TODO: END SCREEN
+            }
 
-        this->model->checkPlayerDeath();
-        this->model->checkPlayerHyperSpace();
-        this->model->shipFireProjectile();
+            this->model->checkParticleLifetimes();
+            this->model->checkProjectileLifetimes();
+            this->model->setShipDirection();
+            this->model->checkShipLifetime();
 
-        std::vector<std::string> keyboardInput = this->view.GetInput();
-        if (std::find(keyboardInput.begin(), keyboardInput.end(), "FORWARD") != keyboardInput.end()) {
-            this->model->setPlayerAccelerating(true);
+            this->model->checkLevel();
+
+            this->model->checkPlayerDeath();
+            this->model->checkPlayerHyperSpace();
+            this->model->shipFireProjectile();
+
+            std::vector<std::string> keyboardInput = this->view.GetInput();
+            if (std::find(keyboardInput.begin(), keyboardInput.end(), "FORWARD") != keyboardInput.end()) {
+                this->model->setPlayerAccelerating(true);
+            }
+            else {
+                this->model->setPlayerAccelerating(false);
+            }
+
+            if (std::find(keyboardInput.begin(), keyboardInput.end(), "SPACE") != keyboardInput.end()) {
+                this->model->playerFireProjectile();
+            }
+
+            if (std::find(keyboardInput.begin(), keyboardInput.end(), "SHIFT") != keyboardInput.end()) {
+                this->model->activateHyperSpace();
+            }
+
+            if (std::find(keyboardInput.begin(), keyboardInput.end(), "RIGHT") != keyboardInput.end()) {
+                this->model->RotatePlayerRight();
+            }
+
+            else if (std::find(keyboardInput.begin(), keyboardInput.end(), "LEFT") != keyboardInput.end()) {
+                this->model->RotatePlayerLeft();
+            }
+
+            //this->view.checkWindowResize();
+
+            this->model->updatePositions();
+            this->model->checkCollisions();
+
+            //this->updateSound();
+
+            nextGameTick += milliseconds(SKIP_TICKS);
+            loops++;
         }
-        else {
-            this->model->setPlayerAccelerating(false);
-        }
-
-        if (std::find(keyboardInput.begin(), keyboardInput.end(), "SPACE") != keyboardInput.end()) {
-            this->model->playerFireProjectile();
-        }
-
-        if (std::find(keyboardInput.begin(), keyboardInput.end(), "SHIFT") != keyboardInput.end()) {
-            this->model->activateHyperSpace();
-        }
-
-        if (std::find(keyboardInput.begin(), keyboardInput.end(), "RIGHT") != keyboardInput.end()) {
-            this->model->RotatePlayerRight();
-        }
-
-        else if (std::find(keyboardInput.begin(), keyboardInput.end(), "LEFT") != keyboardInput.end()) {
-            this->model->RotatePlayerLeft();
-        }
-
-        //this->view.checkWindowResize();
-        
-        this->model->updatePositions();
-        this->model->checkCollisions();
-        
-        this->updateSound();
 
         this->view.Update();
         this->view.Render();

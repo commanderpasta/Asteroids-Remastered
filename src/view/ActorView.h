@@ -4,7 +4,11 @@
 #include "ActorDataView.h"
 #include <memory>
 
-
+/**
+ * Describes a single in-game actor so it can be rendered.
+ *
+ * One ActorView object describes one instance of a game object including its vertex data, texture and shader.
+ */
 class ActorView {
 public: 
 	bool isHidden;

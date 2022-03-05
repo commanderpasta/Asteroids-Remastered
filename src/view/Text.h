@@ -11,6 +11,11 @@
 #include <memory>
 #include <vector>
 
+/**
+ * A single character that belongs to a line of text.
+ *
+ * Contains render data.
+ */
 class Character {
 public:
 	Shader shader;
@@ -37,6 +42,11 @@ public:
 	void setResolution(float x, float y);
 };
 
+/**
+ * A line of text that is displayed on screen.
+ * 
+ * Its render data is described for each character.
+ */
 class Text {
 public:
 	unsigned int id;

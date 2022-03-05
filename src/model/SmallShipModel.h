@@ -7,6 +7,11 @@
 #include <chrono>
 using namespace std::chrono;
 
+/**
+ * Extends upon the BaseShipModel to represent a small ship.
+ *
+ * Contains its own firing logic that works separately from the large ship (i.e. firing at the player).
+ */
 class SmallShipModel : public BaseShipModel {
 private:
 	float shootingInaccuracy;
