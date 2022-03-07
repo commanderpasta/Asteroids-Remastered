@@ -12,12 +12,11 @@ using namespace std::chrono;
  */
 class ProjectileModel : public ActorModel {
 public:
-	steady_clock::time_point timeOfSpawn;
+	steady_clock::time_point timeOfSpawn; /**< The time of when the projectile has spawned. */
 	static float radius;
-	unsigned int ownerId;
-	ProjectileModel(float startingPosition[3], steady_clock::time_point currentFrameTime, unsigned int ownerId);
+	unsigned int ownerId; /**< The id of the object that fired the projectile. */
+	ProjectileModel(float startingPosition[3], steady_clock::time_point currentTickTime, unsigned int ownerId);
 	~ProjectileModel();
 
-	void hasBeenHit();
 	unsigned int getPointsValue();
 };

@@ -1,44 +1,63 @@
 #include "GameModel.h"
 
+/**
+ * Creates a MVC model for the current game instance.
+ * 
+ * \param windowX The x-axis boundary for the game's world space.
+ * \param windowY The y-axis boundary for the game's world space.
+ */
 GameModel::GameModel(unsigned int windowX, unsigned int windowY)
-	: windowX(windowX), currentFrameTime(steady_clock::now()), playerIsInHyperSpace(false), windowY(windowY), physicsEngine(windowX, windowY), score(0), ticksPassed(0), playerLives(3), pointsUntilExtraLive(10000) {
-	this->lastFrameTime = this->currentFrameTime;
-	this->lastHyperSpaceActivation = this->currentFrameTime;
-	this->lastBackgroundSound = this->currentFrameTime;
-	this->levelSystem.setBeginTime(currentFrameTime);
+	: windowX(windowX), currentTickTime(steady_clock::now()), playerIsInHyperSpace(false), windowY(windowY), physicsEngine(windowX, windowY), score(0), playerLives(3), pointsUntilExtraLive(10000) {
+	this->lastHyperSpaceActivation = this->currentTickTime;
+	this->lastBackgroundSound = this->currentTickTime;
+	this->levelSystem.setBeginTime(currentTickTime);
 
 	this->soundFileNames = {"background1", "background2", "booster", "extralife", "projectile", "ship1", "ship2", "ship3", "explosion1"};
 }
+
 GameModel::~GameModel() {
 }
 
+/**
+ * Initializes the player at the start of the game.
+ */
 void GameModel::Setup() {
 	float initialPlayerPosition[3] = { 200.0f, 200.0f, 0.0f };
 	this->AddPlayer(initialPlayerPosition, 0.0f);
 }
 
+/**
+ * Updates the time point for the current game tick.
+ * 
+ * It's used as a timer for calculating durations and cooldowns.
+ */
 void GameModel::setCurrentTime() {
-	this->lastFrameTime = this->currentFrameTime;
-	this->currentFrameTime = steady_clock::now();
-
-	//double timeSpan = duration_cast<duration<double>>(this->currentFrameTime - this->lastFrameTime).count();
-	//this->ticksPassed = timeSpan * TICK_RATE;
+	this->currentTickTime = steady_clock::now();
 }
 
+/**
+ * Performs actions that are related to the current level's state.
+ * 
+ * It is called once per tick to update the current level state. It ends and begins the levels,
+ * and spawns the correct enemies when necessary.
+ * 
+ * It's also responsible for playing the background sounds as their frequency depends on the amount
+ * of large asteroids that have been hit this level.
+ */
 void GameModel::checkLevel() {
 	if (this->levelSystem.isLevelActive) {
 		if (this->asteroids.size() == 0 && this->mediumAsteroids.size() == 0 && this->smallAsteroids.size() == 0) {
-			this->levelSystem.nextLevel(this->currentFrameTime);
+			this->levelSystem.nextLevel(this->currentTickTime);
 			this->soundEvents.push_back({ SoundAction::STOP, "background1" });
 			this->soundEvents.push_back({ SoundAction::STOP, "background2" });
 		}
 		else {
-			if (this->levelSystem.canShipSpawn(this->currentFrameTime)) {
+			if (this->levelSystem.canShipSpawn(this->currentTickTime)) {
 				this->addShip(rand() % 2);
 			}
 
 			float backgroundSoundFrequency = 0.5 - 0.06 * min(3, this->levelSystem.getAmountOfAsteroidSpawns() - this->asteroids.size());
-			duration<double> timeSpan = duration_cast<duration<double>>(this->currentFrameTime - this->lastBackgroundSound);
+			duration<double> timeSpan = duration_cast<duration<double>>(this->currentTickTime - this->lastBackgroundSound);
 
 			if (timeSpan.count() > backgroundSoundFrequency && (this->player || this->playerIsInHyperSpace)) {
 				if (this->backgroundSoundSwitch) {
@@ -48,12 +67,12 @@ void GameModel::checkLevel() {
 					this->soundEvents.push_back({ SoundAction::PLAY, "background2" });
 				}
 				this->backgroundSoundSwitch = !this->backgroundSoundSwitch;
-				this->lastBackgroundSound = this->currentFrameTime;
+				this->lastBackgroundSound = this->currentTickTime;
 			}
 		}
 	}
 	else {
-		if (this->levelSystem.canStartLevel(currentFrameTime)) {
+		if (this->levelSystem.canStartLevel(currentTickTime)) {
 			unsigned int spawnAsteroidCount = this->levelSystem.getAmountOfAsteroidSpawns();
 
 			for (unsigned int i = 0; i < spawnAsteroidCount; i++) {
@@ -65,6 +84,12 @@ void GameModel::checkLevel() {
 
 }
 
+/**
+ * Spawns a ship for the player.
+ * 
+ * \param startingPosition The initial x,y,z position of the player in the world space.
+ * \param rotation The initial orientation of the player's ship.
+ */
 void GameModel::AddPlayer(float startingPosition[3], float rotation) {
 	std::shared_ptr<PlayerModel> playerModel = std::make_shared<PlayerModel>(startingPosition, rotation);
 	this->actors.insert({playerModel->id, playerModel});
@@ -73,6 +98,11 @@ void GameModel::AddPlayer(float startingPosition[3], float rotation) {
 	this->physicsEngine.addPlayer(playerModel->id, playerModel->position[0], playerModel->position[1], 0.0f, 0.0f, 0.005f, 0.0f, 4.0f, playerModel->radius);
 }
 
+/**
+ * Spawns a large asteroid.
+ *
+ * \param startingPosition The initial x,y,z position of the asteroid in the world space.
+ */
 void GameModel::AddAsteroid(float startingPosition[3]) {
 	std::shared_ptr<AsteroidModel> asteroidModel = std::make_shared<AsteroidModel>(startingPosition);
 	this->actors.insert({asteroidModel->id, asteroidModel});
@@ -81,6 +111,11 @@ void GameModel::AddAsteroid(float startingPosition[3]) {
 	this->physicsEngine.addActor(asteroidModel->id, asteroidModel->position[0], asteroidModel->position[1], getRandomFloat(0.0f, 2 * MY_PI), 0.0f, 0.0f, 0.5f, 0.5f, asteroidModel->radius, false, AccelerationType::Linear);
 }
 
+/**
+ * Spawns a medium-sized asteroid.
+ *
+ * \param startingPosition The initial x,y,z position of the asteroid in the world space.
+ */
 void GameModel::addMediumAsteroid(float startingPosition[3]) {
 	std::shared_ptr<MediumAsteroidModel> asteroidModel = std::make_shared<MediumAsteroidModel>(startingPosition);
 	this->actors.insert({ asteroidModel->id, asteroidModel });
@@ -89,6 +124,11 @@ void GameModel::addMediumAsteroid(float startingPosition[3]) {
 	this->physicsEngine.addActor(asteroidModel->id, asteroidModel->position[0], asteroidModel->position[1], getRandomFloat(0.0f, 2 * MY_PI), 0.0f, 0.0f, 1.5f, 1.5f, asteroidModel->radius, false, AccelerationType::Linear);
 }
 
+/**
+ * Spawns a small asteroid.
+ *
+ * \param startingPosition The initial x,y,z position of the asteroid in the world space.
+ */
 void GameModel::addSmallAsteroid(float startingPosition[3]) {
 	std::shared_ptr<SmallAsteroidModel> asteroidModel = std::make_shared<SmallAsteroidModel>(startingPosition);
 	this->actors.insert({ asteroidModel->id, asteroidModel });
@@ -97,9 +137,17 @@ void GameModel::addSmallAsteroid(float startingPosition[3]) {
 	this->physicsEngine.addActor(asteroidModel->id, asteroidModel->position[0], asteroidModel->position[1], getRandomFloat(0.0f, 2 * MY_PI), 0.0f, 0.0f, 1.5f, 1.5f, asteroidModel->radius, false, AccelerationType::Linear);
 }
 
+/**
+ * Spawns death particles.
+ * 
+ * They appear on a game object after it has been destroyed.
+ * 
+ * \param sourcePosition The position of the game object the particles stem from.
+ * \param sourceType The type of game object that created the particles.
+ */
 void GameModel::spawnDeathParticles(float sourcePosition[3], ActorType sourceType) {
 	for (int i = 0; i < 8; i++) {
-		std::shared_ptr<ParticleModel> particleModel = std::make_shared<ParticleModel>(this->currentFrameTime, sourcePosition, sourceType);
+		std::shared_ptr<ParticleModel> particleModel = std::make_shared<ParticleModel>(this->currentTickTime, sourcePosition, sourceType);
 		this->actors.insert({ particleModel->id, particleModel });
 		this->particles.push_back(particleModel);
 
@@ -109,6 +157,11 @@ void GameModel::spawnDeathParticles(float sourcePosition[3], ActorType sourceTyp
 	}
 }
 
+/**
+ * Updates the acceleration state of the player.
+ * 
+ * \param isAccelerating A bool whether the player wants to accelerate.
+ */
 void GameModel::setPlayerAccelerating(bool isAccelerating) {
 	if (!this->player) {
 		return;
@@ -125,20 +178,26 @@ void GameModel::setPlayerAccelerating(bool isAccelerating) {
 		this->player->isAccelerating = false;
 	}
 
-	this->player->checkBoosterActive(this->currentFrameTime);
+	this->player->checkBoosterActive(this->currentTickTime);
 }
 
+/**
+ * Fires a ship's projectile if it is off available.
+ * 
+ * Checks whether the cooldown after the last projectile has passed and whether 
+ * the ship has reached the maximum amount of projectile it can fire at the moment.
+ */
 void GameModel::shipFireProjectile() {
 	if (!this->ship || !this->player) {
 		return;
 	}
 
-	duration<double> timeSpan = duration_cast<duration<double>>(currentFrameTime - this->ship->projectileCooldown);
+	duration<double> timeSpan = duration_cast<duration<double>>(currentTickTime - this->ship->projectileCooldown);
 	if (timeSpan.count() > 0.8 && this->ship->activeProjectileCount < 2) {
-		this->ship->projectileCooldown = currentFrameTime;
+		this->ship->projectileCooldown = currentTickTime;
 		this->ship->activeProjectileCount++;
 
-		std::shared_ptr<ProjectileModel> projectileModel = std::make_shared<ProjectileModel>(ship->position, currentFrameTime, ship->id);
+		std::shared_ptr<ProjectileModel> projectileModel = std::make_shared<ProjectileModel>(ship->position, currentTickTime, ship->id);
 		this->actors.insert({ projectileModel->id, projectileModel });
 		this->projectiles.push_back(projectileModel);
 
@@ -148,18 +207,23 @@ void GameModel::shipFireProjectile() {
 	}
 }
 
-
+/**
+ * Fires a ship's projectile if it is available.
+ * 
+ * Checks whether the cooldown after the last projectile has passed and whether 
+ * the player has reached the maximum amount of projectile it can fire at the moment.
+ */
 void GameModel::playerFireProjectile() {
 	if (!this->player) {
 		return;
 	}
 
-	duration<double> timeSpan = duration_cast<duration<double>>(this->currentFrameTime - this->player->projectileCooldown);
+	duration<double> timeSpan = duration_cast<duration<double>>(this->currentTickTime - this->player->projectileCooldown);
 	if (timeSpan.count() > 0.25 && this->player->activeProjectileCount < 4) {
-		this->player->projectileCooldown = this->currentFrameTime;
+		this->player->projectileCooldown = this->currentTickTime;
 		this->player->activeProjectileCount++;
 
-		std::shared_ptr<ProjectileModel> projectileModel = std::make_shared<ProjectileModel>(this->player->position, this->currentFrameTime, this->player->id);
+		std::shared_ptr<ProjectileModel> projectileModel = std::make_shared<ProjectileModel>(this->player->position, this->currentTickTime, this->player->id);
 		this->actors.insert({ projectileModel->id, projectileModel });
 		this->projectiles.push_back(projectileModel);
 
@@ -168,6 +232,11 @@ void GameModel::playerFireProjectile() {
 	}
 }
 
+/**
+ * Removes an actor and executes corresponding game logic depending on its <ActorType>.
+ * 
+ * \param id The id of the object to remove.
+ */
 void GameModel::removeActor(unsigned int id) {
 	auto actor = this->actors.find(id);
 	
@@ -237,7 +306,7 @@ void GameModel::removeActor(unsigned int id) {
 		} else if (actor->second->actorType == ActorType::Player) {
 			if (!this->playerIsInHyperSpace) {
 				this->playerLives--;
-				this->lastPlayerDeath = this->currentFrameTime;
+				this->lastPlayerDeath = this->currentTickTime;
 				this->soundEvents.push_back({ SoundAction::STOP, "booster" });
 				this->soundEvents.push_back({ SoundAction::PLAY, "explosion1" });
 				this->spawnDeathParticles(this->player->position, this->player->actorType);
@@ -260,22 +329,29 @@ void GameModel::removeActor(unsigned int id) {
 	}
 }
 
+/**
+ * Rotates the player's ship to the left.
+ */
 void GameModel::RotatePlayerLeft() {
-	//player->RotateLeft();
 	this->physicsEngine.rotatePlayerLeft();
 }
 
+/**
+ * Rotates the player's ship to the right.
+ */
 void GameModel::RotatePlayerRight() {
-	//player->RotateRight();
 	this->physicsEngine.rotatePlayerRight();
 }
 
+/**
+ * Checks whether the player is dead and can respawn.
+ */
 void GameModel::checkPlayerDeath() {
 	if (this->player || this->playerIsInHyperSpace) {
 		return;
 	}
 
-	duration<double> timeSpan = duration_cast<duration<double>>(this->currentFrameTime - this->lastPlayerDeath);
+	duration<double> timeSpan = duration_cast<duration<double>>(this->currentTickTime - this->lastPlayerDeath);
 
 	if (timeSpan.count() > 3.0) {
 		float startingPosition[3] = { this->windowX/2.0f, this->windowY/2.0f, 0.0f };
@@ -283,12 +359,15 @@ void GameModel::checkPlayerDeath() {
 	}
 }
 
+/**
+ * Check whether the player is in hyperspace and can return.
+ */
 void GameModel::checkPlayerHyperSpace() {
 	if (!this->playerIsInHyperSpace) {
 		return;
 	}
 
-	duration<double> timeSpan = duration_cast<duration<double>>(this->currentFrameTime - this->lastHyperSpaceActivation);
+	duration<double> timeSpan = duration_cast<duration<double>>(this->currentTickTime - this->lastHyperSpaceActivation);
 
 	if (timeSpan.count() > 2.0) {
 		//avoid spawning player on edge of map
@@ -301,24 +380,30 @@ void GameModel::checkPlayerHyperSpace() {
 	}
 }
 
+/**
+ * Sends the player into hyperspace if it is available.
+ * 
+ * It has a cooldown of three seconds.
+ */
 void GameModel::activateHyperSpace() {
 	if (!this->player) {
 		return;
 	}
 
-	duration<double> timeSpan = duration_cast<duration<double>>(this->currentFrameTime - this->lastHyperSpaceActivation);
+	duration<double> timeSpan = duration_cast<duration<double>>(this->currentTickTime - this->lastHyperSpaceActivation);
 
 	if (timeSpan.count() > 3.0) {
 		this->playerIsInHyperSpace = true;
 		this->removeActor(this->player->id);
-		this->lastHyperSpaceActivation = this->currentFrameTime;
+		this->lastHyperSpaceActivation = this->currentTickTime;
 	}
 }
 
-
+/**
+ * Updates the positions and rotations of every game object using the physics engine.
+ */
 void GameModel::updatePositions() {
-	duration<float> timePassed = duration_cast<duration<float>>(this->currentFrameTime - this->lastFrameTime);
-	auto newPositionsById = this->physicsEngine.updatePositions(this->ticksPassed);
+	auto newPositionsById = this->physicsEngine.updatePositions();
 
 	for (auto& positionById : newPositionsById) {
 		auto actor = this->actors.find(std::get<0>(positionById));
@@ -331,6 +416,11 @@ void GameModel::updatePositions() {
 	}
 }
 
+/**
+ * Adds points to the score after a player has destroyed an object.
+ * 
+ * \param id The id of the object the player has destroyed.
+ */
 void GameModel::addPointsFromActor(unsigned int id) {
 	auto actor = this->actors.find(id);
 
@@ -349,6 +439,15 @@ void GameModel::addPointsFromActor(unsigned int id) {
 	}
 }
 
+/**
+ * Handles the collision between a projectile and an object.
+ * 
+ * Awards points and removes the objects. It ignores the collision
+ * between objects and projectiles they have fired themselves.
+ * 
+ * \param projectileId The id of the projectile.
+ * \param targetId The id of the object hit by the projectile.
+ */
 void GameModel::checkCollisionWithProjectile(unsigned int projectileId, unsigned int targetId) {
 	auto projectile = std::dynamic_pointer_cast<ProjectileModel>(this->actors[projectileId]);
 
@@ -361,6 +460,15 @@ void GameModel::checkCollisionWithProjectile(unsigned int projectileId, unsigned
 	}
 }
 
+/**
+ * Gets all registered collisions from the physics engine and handles the outcomes.
+ * 
+ * It checks for cases to ignore the collision, 
+ * like player invincibility after having died recently,
+ * particle collisions,
+ * or e.g. two projectiles detecting eachother in their hitboxes.
+ * 
+ */
 void GameModel::checkCollisions() {
 	auto test = this->physicsEngine.checkCollisions();
 
@@ -372,7 +480,7 @@ void GameModel::checkCollisions() {
 			}
 
 			if (this->player && (collisionPairIds.first == this->player->id || collisionPairIds.second == this->player->id)) {
-				duration<double> timeSpan = duration_cast<duration<double>>(this->currentFrameTime - this->lastPlayerDeath);
+				duration<double> timeSpan = duration_cast<duration<double>>(this->currentTickTime - this->lastPlayerDeath);
 
 				if (timeSpan.count() < 5.0) {
 					return; //2 seconds of respawn time + 3 second invincibility on respawn after death
@@ -393,10 +501,15 @@ void GameModel::checkCollisions() {
 	}
 }
 
+/**
+ * Despawns projectiles that have exceeded their lifetime.
+ * 
+ * Each projectile has a lifetime of two seconds.
+ */
 void GameModel::checkProjectileLifetimes() {
 	std::vector<unsigned int> idsToRemove;
 	for (auto& projectile : this->projectiles) {
-		duration<double> timeSpan = duration_cast<duration<double>>(this->currentFrameTime - projectile->timeOfSpawn);
+		duration<double> timeSpan = duration_cast<duration<double>>(this->currentTickTime - projectile->timeOfSpawn);
 
 		if (timeSpan.count() > 2.0) {
 			idsToRemove.push_back(projectile->id);
@@ -408,10 +521,13 @@ void GameModel::checkProjectileLifetimes() {
 	}
 }
 
+/**
+ * Despawns particles that have exceeded their lifetime.
+ */
 void GameModel::checkParticleLifetimes() {
 	std::vector<unsigned int> idsToRemove;
 	for (auto& particle : this->particles) {
-		if (particle->shouldDestroy(this->currentFrameTime)) {
+		if (particle->shouldDestroy(this->currentTickTime)) {
 			idsToRemove.push_back(particle->id);
 		}
 	}
@@ -421,6 +537,11 @@ void GameModel::checkParticleLifetimes() {
 	}
 }
 
+/**
+ * Spawns a ship and sets its properties.
+ * 
+ * \param isLarge Decides whether it spawns a large or a small ship.
+ */
 void GameModel::addShip(bool isLarge) {
 	bool startOnLeft = randomBool();
 	float x;
@@ -442,11 +563,11 @@ void GameModel::addShip(bool isLarge) {
 	std::shared_ptr<BaseShipModel> shipModel;
 
 	if (isLarge) {
-		shipModel = std::make_shared<LargeShipModel>(startingPosition, this->currentFrameTime, startOnLeft);
+		shipModel = std::make_shared<LargeShipModel>(startingPosition, this->currentTickTime, startOnLeft);
 		this->soundEvents.push_back({ SoundAction::LOOP, "ship3" });
 	}
 	else {
-		SmallShipModel smallShip(startingPosition, this->currentFrameTime, startOnLeft);
+		SmallShipModel smallShip(startingPosition, this->currentTickTime, startOnLeft);
 
 		float shootingInaccuracy = std::fmax(0.0f, 0.2f - (this->levelSystem.getCurrentLevel() * 0.05f));
 		smallShip.setInaccuracy(shootingInaccuracy);
@@ -462,12 +583,19 @@ void GameModel::addShip(bool isLarge) {
 	this->physicsEngine.setBoundByWindow(shipModel->id, false, true);
 }
 
+/**
+ * Updates the ship's moving direction.
+ * 
+ * It gets a new <MovingState> from the ship every two seconds and calculates
+ * the resulting direction from it.
+ * 
+ */
 void GameModel::setShipDirection() {
 	if (!this->ship) {
 		return;
 	}
 
-	duration<double> timeSpan = duration_cast<duration<double>>(currentFrameTime - this->ship->lastChangeOfDirection);
+	duration<double> timeSpan = duration_cast<duration<double>>(currentTickTime - this->ship->lastChangeOfDirection);
 	if (timeSpan.count() >= 2.0) {
 		MovingState newState = this->ship->changeDirection();
 
@@ -497,17 +625,26 @@ void GameModel::setShipDirection() {
 		}
 
 		this->physicsEngine.setDirection(this->ship->id, newDirectionInRad);
-		this->ship->lastChangeOfDirection = currentFrameTime;
+		this->ship->lastChangeOfDirection = currentTickTime;
 		this->soundEvents.push_back({ SoundAction::LOOP, "ship2" });
 	}
 }
 
+/**
+ * Checks whether a ship should despawn.
+ * 
+ * This is the case when the ship has reached the other side, as
+ * it is only alive while it moves across the entire game space.
+ */
 void GameModel::checkShipLifetime() {
 	if (this->ship && this->ship->hasReachedOtherSide(this->windowX)) {
 		this->removeActor(this->ship->id);
 	}
 }
 
+/**
+ * Empty the list of sound events after having processed them.
+ */
 void GameModel::clearSoundChanges() {
 	this->soundEvents.clear();
 }

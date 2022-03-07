@@ -3,15 +3,16 @@
 
 float MediumAsteroidModel::radius = 15.0f;
 
+/**
+ * Creates a medium-sized asteroid.
+ *
+ * \param startingPosition The initial x,y,z position of the asteroid in world space.
+ */
 MediumAsteroidModel::MediumAsteroidModel(float startingPosition[3])
 	: ActorModel(startingPosition, 0, ActorType::AsteroidMedium) {
 }
 
 MediumAsteroidModel::~MediumAsteroidModel() {
-}
-
-void MediumAsteroidModel::hasBeenHit() {
-	//award points und so
 }
 
 unsigned int MediumAsteroidModel::getPointsValue() {

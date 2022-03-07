@@ -53,8 +53,8 @@ void GameController::update() {
     const int SKIP_TICKS = 1000 / TICKS_PER_SECOND;
     const int MAX_FRAMESKIP = 10;
 
-    auto nextGameTick = this->model->currentFrameTime;
-    auto lastRenderTick = this->model->currentFrameTime;
+    auto nextGameTick = this->model->currentTickTime;
+    auto lastRenderTick = this->model->currentTickTime;
 
     bool isGameOver = false;
 

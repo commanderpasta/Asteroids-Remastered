@@ -10,6 +10,5 @@ public:
 	SmallAsteroidModel(float startingPosition[3]);
 	~SmallAsteroidModel();
 
-	void hasBeenHit();
 	unsigned int getPointsValue();
 };

@@ -2,15 +2,16 @@
 
 float AsteroidModel::radius = 30.0f;
 
+/**
+ * Creates an asteroid.
+ * 
+ * \param startingPosition The initial x,y,z position of the asteroid in world space.
+ */
 AsteroidModel::AsteroidModel(float startingPosition[3])
 	: ActorModel(startingPosition, 0, ActorType::AsteroidLarge) {
 }
 
 AsteroidModel::~AsteroidModel() {
-}
-
-void AsteroidModel::hasBeenHit() {
-	//award points und so
 }
 
 unsigned int AsteroidModel::getPointsValue() {

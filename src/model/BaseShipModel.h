@@ -16,14 +16,14 @@ enum class MovingState { Left, Right, LeftUp, LeftDown, RightUp, RightDown };
  * Contains the movement logic that is shared between large and small ships.
  */
 class BaseShipModel : public ActorModel {
-	MovingState movingState;
-	MovingState baseDirection;
+	MovingState movingState; /**< Describes the current <MovingState> of the ship. */
+	MovingState baseDirection; /**< Describes whether the ship move right to left or left to right. */
 public:
 	static float radius;
-	unsigned int activeProjectileCount;
+	unsigned int activeProjectileCount; /**< The amount of projectile it launched that have not despawned yet. */
 
-	steady_clock::time_point projectileCooldown;
-	steady_clock::time_point lastChangeOfDirection;
+	steady_clock::time_point projectileCooldown; /**< The last time it has fired a projectile. */
+	steady_clock::time_point lastChangeOfDirection; /**< Describes the last time its direction has changed. */
 	MovingState changeDirection();
 
 	BaseShipModel(float startingPosition[3], steady_clock::time_point timeOfSpawn, bool startOnLeft, ActorType shipType);

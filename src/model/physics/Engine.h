@@ -26,40 +26,39 @@ class PhysicsEngine {
 	 */
 	class PhysicsObject {
 	public:
-		//positions
-		float x;
-		float y;
+		float x; /**< The object's x-coordinate in the playing space. */
+		float y; /**< The object's y-coordinate in the playing space. */
 
-		float direction;
-		float rotation;
+		float direction; /**< The orientation the object is moving towards. */
+		float rotation; /**< The orienation the object is facing. */
 
-		float collisionRadius;
+		float collisionRadius; /**< The radius around the object where it detects a collision. */
 
-		float deltaVelocity;
-		float deacceleration;
+		float deltaVelocity; /**< The velocity that is applied to the object every tick. */
+		float deacceleration; /**< The amount it deccelerates by every tick. */
 
-		float currentSpeed;
-		float maxSpeed;
+		float currentSpeed; /**< The absolute speed the object is moving at. */
+		float maxSpeed; /**< The maximum allowed speed for the object. */
 		
-		float velocityX;
-		float velocityY;
-		unsigned int id;
+		float velocityX; /**< The velocity of the object towards the x-axis. */
+		float velocityY; /**< The velocity of the object towards the y-axis. */
+		unsigned int id; /**< A unique id to refer to the object. */
 		
-		bool boundInWindowX;
-		bool boundInWindowY;
+		bool boundInWindowX; /**< Decides whether the object wraps around the vertical game space bounds. */
+		bool boundInWindowY;  /**< Decides whether the object wraps around the horizontal game space bounds. */
 
-		AccelerationType accelerationType;
+		AccelerationType accelerationType; /**< Describes whether the acceleration of the object has physical properties. */
 		PhysicsObject(unsigned int id, float x, float y, float direction, float acceleration, float deacceleration, float startingSpeed, float maxSpeed, float hitboxRadius, AccelerationType accelerationType);
 		~PhysicsObject();
 	};
 
 private:
-	std::shared_ptr<PhysicsObject> player;
-	std::vector<std::shared_ptr<PhysicsObject>> actorPhysicsObjects;
-	std::vector<std::shared_ptr<PhysicsObject>> actorsWithHitboxRegistration;
+	std::shared_ptr<PhysicsObject> player; /**< A reference to the player's <PhysicsObject>. */
+	std::vector<std::shared_ptr<PhysicsObject>> actorPhysicsObjects; /**< Contains every <PhysicsObject> to itervate over. */
+	std::vector<std::shared_ptr<PhysicsObject>> actorsWithHitboxRegistration; /**< Contains every <PhysicsObject> that announces collision detections every tick. */
 
-	unsigned int boundaryX;
-	unsigned int boundaryY;
+	unsigned int boundaryX; /**< The x-axis bounds of the game space. */
+	unsigned int boundaryY; /**< The y-axis bounds of the game space. */
 public:
 	PhysicsEngine(unsigned int boundaryX, unsigned int boundaryY);
 	~PhysicsEngine();
@@ -75,6 +74,6 @@ public:
 	void rotatePlayerLeft();
 	void rotatePlayerRight();
 
-	std::vector <std::tuple<unsigned int, float, float, float>> updatePositions(unsigned int ticksPassed);
-	std::vector<std::pair<unsigned int, unsigned int>> checkCollisions(); //returns pairs of ids with colliding objects
+	std::vector <std::tuple<unsigned int, float, float, float>> updatePositions();
+	std::vector<std::pair<unsigned int, unsigned int>> checkCollisions();
 };

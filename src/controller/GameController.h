@@ -9,9 +9,9 @@
  */
 class GameController {
 public:
-    std::shared_ptr<GameModel> model;
-    GameView view;
-    DirectSound soundApi;
+    std::shared_ptr<GameModel> model; /**< A reference to the model to handle game logic with. */
+    GameView view; /**< The view to output graphics with. */
+    DirectSound soundApi; /** A DirectSound API to output sound. */
 
     GameController(std::shared_ptr<GameModel> model);
     ~GameController();

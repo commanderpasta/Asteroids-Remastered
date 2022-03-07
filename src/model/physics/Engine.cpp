@@ -3,16 +3,57 @@
 #include <iostream>
 #include <algorithm>
 
+/**
+ * Creates an instance of a physics engine that manages <PhysicsObject>'s.
+ * 
+ * It functions as a manager that doesn't have direct knowledge of the object's
+ * properties in the model, and instead announces position and collison updates over the
+ * object's ids.
+ * 
+ * \param boundaryX The x-axis bounds of the game space.
+ * \param boundaryY The y-axis bounds of the game space.
+ */
 PhysicsEngine::PhysicsEngine(unsigned int boundaryX, unsigned int boundaryY)
 	: boundaryX(boundaryX), boundaryY(boundaryY) {}
 PhysicsEngine::~PhysicsEngine() {}
 
+/**
+ * Creates a <PhysicsObject> to be managed by the <PhysicsEngine>.
+ * 
+ * \param id The unique id of the game object in the <GameModel>.
+ * \param x The object's initial position on the x-axis.
+ * \param y The object's initial position on the y-axis.
+ * \param direction The object's initial direction it should move towards.
+ * \param acceleration The object's initial acceleration.
+ * \param deacceleration The object's initial deacceleration.
+ * \param startingSpeed The object's initial speed.
+ * \param maxSpeed The object's maximum allowed speed.
+ * \param hitboxRadius The radius of the circle hitbox centered around the object.
+ * \param accelerationType Determines the physical properties of the object's acceleration.
+ */
 PhysicsEngine::PhysicsObject::PhysicsObject(unsigned int id, float x, float y, float direction, float acceleration, float deacceleration, float startingSpeed, float maxSpeed, float hitboxRadius, AccelerationType accelerationType)
 	: id(id), x(x), y(y), direction(direction), deltaVelocity(acceleration), deacceleration(deacceleration), maxSpeed(maxSpeed), currentSpeed(startingSpeed), velocityX(startingSpeed * sin(direction)), velocityY(startingSpeed * cos(direction)), rotation(0.0f), 
 	collisionRadius(hitboxRadius), accelerationType(accelerationType), boundInWindowX(true), boundInWindowY(true)
 {}
 PhysicsEngine::PhysicsObject::~PhysicsObject() {}
 
+/**
+ * Adds a physical representation of an actor to be managed in the PhysicsEngine.
+ * 
+ * @see <PhysicsObject>
+ * 
+ * \param id The unique id of the game object in the <GameModel>.
+ * \param x The object's initial position on the x-axis.
+ * \param y The object's initial position on the y-axis.
+ * \param direction The object's initial direction it should move towards.
+ * \param acceleration The object's initial acceleration.
+ * \param deacceleration The object's initial deacceleration.
+ * \param startingSpeed The object's initial speed.
+ * \param maxSpeed The object's maximum allowed speed.
+ * \param hitboxRadius The radius of the circle hitbox centered around the object.
+ * \param hasHitboxRegistration
+ * \param accelerationType Determines the physical properties of the object's acceleration.
+ */
 void PhysicsEngine::addActor(unsigned int id, float x, float y, float direction, float acceleration, float deacceleration, float startingSpeed, float maxSpeed, float hitboxRadius, bool hasHitboxRegistration, AccelerationType accelerationType) {
 	std::shared_ptr<PhysicsObject> newActor = std::make_shared<PhysicsObject>(id, x, y, direction, acceleration, deacceleration, startingSpeed, maxSpeed, hitboxRadius, accelerationType);
 	this->actorPhysicsObjects.emplace_back(newActor);
@@ -21,12 +62,33 @@ void PhysicsEngine::addActor(unsigned int id, float x, float y, float direction,
 	}
 }
 
+//TODO: Remove
+/**
+ * Adds a physical representation of the player to be managed in the PhysicsEngine.
+ * 
+ * @see PhysicsEngine::addActor()
+ * 
+ * \param id
+ * \param x
+ * \param y
+ * \param direction
+ * \param acceleration
+ * \param deacceleration
+ * \param startingSpeed
+ * \param maxSpeed
+ * \param hitboxRadius
+ */
 void PhysicsEngine::addPlayer(unsigned int id, float x, float y, float direction, float acceleration, float deacceleration, float startingSpeed, float maxSpeed, float hitboxRadius) {
 	this->player = std::make_shared<PhysicsObject>(id, x, y, direction, acceleration, deacceleration, startingSpeed, maxSpeed, hitboxRadius, AccelerationType::Linear);
 	this->actorPhysicsObjects.emplace_back(this->player);
 	this->actorsWithHitboxRegistration.emplace_back(this->player);
 }
 
+/**
+ * Removes the <PhysicsObject> of a game object.
+ * 
+ * \param id The id of the game object.
+ */
 void PhysicsEngine::removeActor(unsigned int id) {
 	auto it = std::find_if(this->actorPhysicsObjects.begin(), this->actorPhysicsObjects.end(), [id](std::shared_ptr<PhysicsObject> object) { return object->id == id; });
 
@@ -44,7 +106,12 @@ void PhysicsEngine::removeActor(unsigned int id) {
 	}
 }
 
-std::vector <std::tuple<unsigned int, float, float, float>> PhysicsEngine::updatePositions(unsigned int ticksPassed) {
+/**
+ * Updates the position of every <PhysicsObject> for one tick.
+ * 
+ * \return Returns a list containing the id and new x,y,z coordinates of the game object.
+ */
+std::vector <std::tuple<unsigned int, float, float, float>> PhysicsEngine::updatePositions() {
 
 	std::vector <std::tuple<unsigned int, float, float, float>> calculatedPositions;
 
@@ -122,6 +189,12 @@ std::vector <std::tuple<unsigned int, float, float, float>> PhysicsEngine::updat
 	return calculatedPositions;
 }
 
+/**
+ * Sets the direction of a <PhysicsObject>.
+ * 
+ * \param id The id of the game object the <PhysicsObject> belongs to.
+ * \param directionInRad The new direction of the <PhysicsObject> with a radian value.
+ */
 void PhysicsEngine::setDirection(unsigned int id, float directionInRad) {
 	auto it = std::find_if(this->actorPhysicsObjects.begin(), this->actorPhysicsObjects.end(), [id](std::shared_ptr<PhysicsObject> object) { return object->id == id; });
 
@@ -130,6 +203,12 @@ void PhysicsEngine::setDirection(unsigned int id, float directionInRad) {
 	}
 }
 
+/**
+ * Sets the acceleration of a <PhysicsObject>.
+ * 
+ * \param id The id of the <PhysicsObject> the game object belongs to.
+ * \param acceleration The new acceleration of the <PhysicsObject>.
+ */
 void PhysicsEngine::setAcceleration(unsigned int id, float acceleration) {
 	auto it = std::find_if(this->actorPhysicsObjects.begin(), this->actorPhysicsObjects.end(), [id](std::shared_ptr<PhysicsObject> object) { return object->id == id; });
 
@@ -138,6 +217,9 @@ void PhysicsEngine::setAcceleration(unsigned int id, float acceleration) {
 	}
 }
 
+/**
+ * Rotates the player by DELTA to the left in the next tick.
+ */
 void PhysicsEngine::rotatePlayerLeft() {
 	this->player->direction -= DELTA;
 	if (this->player->direction <= 0.0f) {
@@ -147,6 +229,9 @@ void PhysicsEngine::rotatePlayerLeft() {
 	this->player->rotation = this->player->direction;
 }
 
+/**
+ * Rotates the player by DELTA to the right in the next tick.
+ */
 void PhysicsEngine::rotatePlayerRight() {
 	this->player->direction += DELTA;
 	if (this->player->direction >= (2 * MY_PI)) {
@@ -156,6 +241,11 @@ void PhysicsEngine::rotatePlayerRight() {
 	this->player->rotation = this->player->direction;
 }
 
+/**
+ * Checks the collision of every <PhysicsObject> where hitbox registration is enabled.
+ * 
+ * \return Returns a list of id pairs belonging to the objects that have collided.
+ */
 std::vector<std::pair<unsigned int, unsigned int>> PhysicsEngine::checkCollisions() {
 	std::vector<std::pair<unsigned int, unsigned int>> test;
 
@@ -181,6 +271,13 @@ std::vector<std::pair<unsigned int, unsigned int>> PhysicsEngine::checkCollision
 	return test;
 }
 
+/**
+ * Sets which game space boundaries a <PhysicsObject> will wrap around.
+ * 
+ * \param id The id of the game object the <PhysicsObject> belongs to
+ * \param x A bool whether the game object wraps around the vertical bounds.
+ * \param y A bool whether the game object wraps around the horizontal bounds.
+ */
 void PhysicsEngine::setBoundByWindow(unsigned int id, bool x, bool y) {
 	auto it = std::find_if(this->actorPhysicsObjects.begin(), this->actorPhysicsObjects.end(), [id](std::shared_ptr<PhysicsObject> object) { return object->id == id; });
 

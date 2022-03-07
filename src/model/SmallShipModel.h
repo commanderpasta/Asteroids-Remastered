@@ -14,7 +14,7 @@ using namespace std::chrono;
  */
 class SmallShipModel : public BaseShipModel {
 private:
-	float shootingInaccuracy;
+	float shootingInaccuracy; /**< A radian value that determines by how much the shooter misses when firing at the player. */
 public:
 	static float radius;
 

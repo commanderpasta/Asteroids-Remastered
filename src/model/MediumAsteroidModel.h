@@ -10,6 +10,5 @@ public:
 	MediumAsteroidModel(float startingPosition[3]);
 	~MediumAsteroidModel();
 
-	void hasBeenHit();
 	unsigned int getPointsValue();
 };

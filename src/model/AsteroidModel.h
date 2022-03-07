@@ -6,10 +6,9 @@
  */
 class AsteroidModel : public ActorModel {
 public:
-	static float radius;
+	static float radius; /**< The object's size. */
 	unsigned int getPointsValue();
+	
 	AsteroidModel(float startingPosition[3]);
 	~AsteroidModel();
-
-	void hasBeenHit();
 };
