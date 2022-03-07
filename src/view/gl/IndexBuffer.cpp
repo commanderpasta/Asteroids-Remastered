@@ -27,6 +27,7 @@ IndexBuffer::~IndexBuffer() {
 
 /**
  * Binds the index buffer in OpenGL.
+ * 
  */
 void IndexBuffer::Bind() const {
     GLCall(glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_RendererID));

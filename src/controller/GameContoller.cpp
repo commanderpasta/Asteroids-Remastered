@@ -49,7 +49,7 @@ void GameController::update() {
     this->view.setup();
     this->setupSound();
 
-    const int TICKS_PER_SECOND = 60;
+    const int TICKS_PER_SECOND = 144;
     const int SKIP_TICKS = 1000 / TICKS_PER_SECOND;
     const int MAX_FRAMESKIP = 10;
 
@@ -62,12 +62,13 @@ void GameController::update() {
     {
         // Render here
         this->view.Clear();
-        
 
         if (isGameOver) {
             break; //TODO: END SCREEN
         }
 
+        // update model at a fixed rate (TICKS_PER_SECOND), independently from view 
+        // reference https://web.archive.org/web/20160328091806/http://www.koonsolo.com/news/dewitters-gameloop/
         int loops = 0;
         while (steady_clock::now() > nextGameTick && loops < MAX_FRAMESKIP) {
             this->model->setCurrentTime();
@@ -116,7 +117,7 @@ void GameController::update() {
             this->model->updatePositions();
             this->model->checkCollisions();
 
-            //this->updateSound();
+            this->updateSound();
 
             nextGameTick += milliseconds(SKIP_TICKS);
             loops++;

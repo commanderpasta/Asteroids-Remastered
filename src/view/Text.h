@@ -12,14 +12,14 @@
 #include <vector>
 
 /**
- * A single character that belongs to a line of text.
+ * A single <Character> that belongs to a line of text.
  *
  * Contains render data.
  */
 class Character {
 public:
-	Shader shader;
-	std::shared_ptr<BaseDataView> data;
+	Shader shader; /**< The <Shader> program for this <Character>. */
+	std::shared_ptr<BaseDataView> data; /**< The OpenGL buffer data for this <Character>. */
 
 	Character(std::shared_ptr<BaseDataView> data, std::string shaderPath, float x, float y);
 	~Character();
@@ -43,23 +43,23 @@ public:
 };
 
 /**
- * A line of text that is displayed on screen.
+ * A line of <Text> that is displayed on screen.
  * 
- * Its render data is described for each character.
+ * Its render data is described separately for each <Character>.
  */
 class Text {
 public:
-	unsigned int id;
-	std::string text;
-	std::vector<Character> characters;
-	static inline std::shared_ptr<Texture> texture;
+	unsigned int id; /**< The id of this UI text. */
+	std::string text; /**< The text that it displays. */
+	std::vector<Character> characters; /**< The characters the <text> consists of.*/
+	static inline std::shared_ptr<Texture> texture; /**< The texture bitmap for the font of this text. */
 
 	Text(unsigned int id, std::string text, float x, float y, float windowX, float windowY);
 
 	static void setup();
 };
 
-//<character, <row, column>>
+/**< A map that represents the coordinates of the character tile map used for this game's font bitmap. */ 
 inline std::map<char, std::pair<unsigned int, unsigned int>> charCoordinates = 
 {{' ', {0, 0}},{'!', {0, 1}},{'"', {0, 2}},{'#', {0, 3}},{'$', {0, 4}},{'%', {0, 5}},{'&', {0, 6}},{'\'', {0, 7}},
 {'(', {1, 0}},{')', {1, 1}},{'*', {1, 2}},{'+', {1, 3}},{',', {1, 4}},{'-', {1, 5}},{'.', {1, 6}},{'/', {1, 7}}, 

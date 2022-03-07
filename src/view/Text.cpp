@@ -1,5 +1,13 @@
 #include "Text.h"
 
+/**
+ * Creates the buffer data and shader program for a text character.
+ * 
+ * \param data The buffer data for this character
+ * \param shaderPath The file path to use for creating a <Shader> program
+ * \param x The absolute x coordinate of this character
+ * \param y The absolute y coordinate of this character 
+ */
 Character::Character(std::shared_ptr<BaseDataView> data, std::string shaderPath, float x, float y)
     : data(data), shader(shaderPath) {
 
@@ -21,6 +29,15 @@ Character::Character(std::shared_ptr<BaseDataView> data, std::string shaderPath,
     this->shader.Unbind();
 }
 
+/**
+ * Changes the projection matrix of this <Character>.
+ * 
+ * If the window resolution changes, the <Shader>'s projection matrix needs to be adapted
+ * for the new resolution.
+ * 
+ * \param x The width of the new resolution
+ * \param y The height of the new resolution
+ */
 void Character::setResolution(float x, float y) {
     float LEFT = 0.0f;
     float RIGHT = x;
@@ -43,6 +60,12 @@ Character::~Character() {
 
 }
 
+/**
+ * Changes the position of the <Character>.
+ * 
+ * \param position Th
+ * \param angle
+ */
 void Character::SetPosition(float position[3], float angle) {
     this->shader.Bind();
     float translationMatrix[4][4] = {
@@ -68,6 +91,16 @@ void Character::SetPosition(float position[3], float angle) {
     this->shader.Unbind();
 }
 
+/**
+ * Creates a new text that can be displayed on screen.
+ * 
+ * \param id The id of the new text.
+ * \param text The text it represents.
+ * \param x The x-coordinate of the lower left corner of the text.
+ * \param y The y-coordinate of the lower left corner of the text.
+ * \param windowX The width of the window of the game instance.
+ * \param windowY The height of the window of the game instance.
+ */
 Text::Text(unsigned int id, std::string text, float x, float y, float windowX, float windowY) : text(text), id(id) {
 	int counter = 0;
 
@@ -99,6 +132,9 @@ Text::Text(unsigned int id, std::string text, float x, float y, float windowX, f
 	}
 }
 
+/**
+ * Initializes a sample font.
+ */
 void Text::setup() {
     Text::texture = std::make_shared<Texture>("res/textures/font/ExportedFont.bmp");
 }

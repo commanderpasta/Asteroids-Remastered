@@ -11,7 +11,7 @@ class VertexBufferLayout;
  */
 class VertexArray {
 public: 
-	unsigned int m_RendererID;
+	unsigned int m_RendererID; /**< The id for accessing the vertex array in OpenGL. */
 
 	VertexArray();
 	~VertexArray();

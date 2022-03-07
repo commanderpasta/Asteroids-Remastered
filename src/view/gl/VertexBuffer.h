@@ -7,7 +7,7 @@
  */
 class VertexBuffer {
 	public:
-		unsigned int m_RendererID;
+		unsigned int m_RendererID; /**< The id for accessing the vertex buffer in OpenGL. */
 
 		VertexBuffer(const void* data, unsigned int size);
 		~VertexBuffer();

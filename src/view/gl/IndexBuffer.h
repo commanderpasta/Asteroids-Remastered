@@ -7,9 +7,9 @@
  */
 class IndexBuffer {
 	private:
-		unsigned int m_Count; /**< count variable. Describes the amount of vertices. */
+		unsigned int m_Count; /**< Describes the amount of vertices. */
 	public:
-		unsigned int m_RendererID; /**< renderer ID. Unique identifier for the corresponding buffer in OpenGL. */
+		unsigned int m_RendererID; /**< Unique identifier for the corresponding buffer in OpenGL. */
 
 		IndexBuffer(const unsigned int* data, unsigned int count);
 		~IndexBuffer();

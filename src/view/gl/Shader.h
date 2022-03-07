@@ -3,6 +3,9 @@
 #include <string>
 #include <unordered_map>
 
+/**
+ * Access the vertex and fragment shader from the shader code separately.
+ */
 struct ShaderProgramSource {
 	std::string VertexSource;
 	std::string FragmentSource;
@@ -18,10 +21,10 @@ struct ShaderProgramSource {
  */
 class Shader {
 private:
-	std::string m_FilePath;
-	std::unordered_map<std::string, int> m_UniformLocationCache;
+	std::string m_FilePath; /**< The path of the file containing the shader code.*/
+	std::unordered_map<std::string, int> m_UniformLocationCache; /**< A map to access shader uniforms by their location.*/
 public:
-	unsigned int m_RendererID;
+	unsigned int m_RendererID; /**< The id for accessing the shader in OpenGL. */
 	Shader(const std::string& filepath);
 	~Shader();
 
