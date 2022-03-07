@@ -2,9 +2,15 @@
 
 #include <iostream>
 
+/**
+ * Creates a view manager for this game instance.
+ * 
+ * Attempts to initialize GLFW, OpenGL, and GLEW.
+ * 
+ * \param model The MVC model used for this game instance.
+ */
 GameView::GameView(std::shared_ptr<GameModel> model) : model(model), window(nullptr) {
-    /* Initialize the library */
-    glfwInit();
+    glfwInit(); // Attempt to intialize the library
 
     this->window = glfwCreateWindow(this->model->windowX, this->model->windowY, "Asteroids: Remastered", NULL, NULL); //glfwGetPrimaryMonitor()
 
@@ -14,21 +20,25 @@ GameView::GameView(std::shared_ptr<GameModel> model) : model(model), window(null
         //return -1;
     }
 
-    /* Make the window's context current */
-    glfwMakeContextCurrent(this->window);
+    glfwMakeContextCurrent(this->window); // Make the window's context current
 
-    /* Tie frame rate to monitor refresh rate */
-    glfwSwapInterval(1);
+    glfwSwapInterval(0); // Disable V-sync (meaning no frame limiter)
 
     if (glewInit() != GLEW_OK) {
         std::cout << "Error!" << std::endl;
         //return -1;
     }
 
+    // Enable texture blending in OpenGL
     GLCall(glEnable(GL_BLEND));
     GLCall(glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA));
 }
 
+/**
+ * Preloads buffer data for each ActorType.
+ * 
+ * Avoids performance hiccups when having to load new textures and buffers during gameplay.
+ */
 void GameView::setup() {
     Text::setup();
 
@@ -43,24 +53,37 @@ void GameView::setup() {
     }
 
     this->AddActor(10000, ActorType::Booster);
-    //this->AddText(0, std::to_string(this->model->score), this->model->windowX * 0.1f, this->model->windowY * 0.9f);
 }
 
 GameView::~GameView() {
 
 }
 
+/**
+ * Gets the HWND context for this game instance.
+ * 
+ * Necessary for the DirectSound API to know the window to attach to.
+ * 
+ * \return The HWND context of the window for this game instance.
+ */
 HWND GameView::getHwnd() {
     return glfwGetWin32Window(this->window);
 }
 
-
+/**
+ * Changes the resolution of the game while it is active.
+ */
 void GameView::updateResolution() {
     for (auto& actor : this->actors) {
         actor.second.setResolution(this->model->windowX, this->model->windowY);
     }
 }
 
+/**
+ * Checks whether the window size has changed.
+ * 
+ * Updates the resolution if it is the case.
+ */
 void GameView::checkWindowResize() {
     int width, height;
     glfwGetWindowSize(window, &width, &height);
@@ -73,15 +96,27 @@ void GameView::checkWindowResize() {
     }
 } 
 
-
+/**
+ * Checks with GLFW whether the window should be closed.
+ * 
+ * \return A boolean stating whether it should be closed.
+ */
 bool GameView::ShouldWindowClose() const {
     return glfwWindowShouldClose(this->window);
 }
 
+/**
+ * Directs the GPU to swap the currently displayed frame with the newly drawn frame.
+ */
 void GameView::SwapBuffers() const {
     glfwSwapBuffers(this->window);
 }
 
+/**
+ * Gets all mapped inputs the player is currently holding.
+ * 
+ * \return A list with the names of the pressed (mapped) keys.
+ */
 std::vector<std::string> GameView::GetInput() {
     glfwPollEvents();
 
@@ -106,20 +141,38 @@ std::vector<std::string> GameView::GetInput() {
     return keyboardEvents;
 }
 
-
+/**
+ * Adds a new UI text to be drawn on the next frame.
+ * 
+ * \param id The new id of the text.
+ * \param text The text to be display
+ * \param x The x coordinate of the lower left corner of the text.
+ * \param y The y coordinate of the lower left corner of the text.
+ */
 void GameView::AddText(unsigned int id, std::string text, float x, float y) {
     Text newText(id, text, x, y, this->model->windowX, this->model->windowY);
     this->texts.insert({id, std::move(newText)});
 }
 
+/**
+ * Removes an existing UI text from the list of displayed texts.
+ * 
+ * \param id The id of the text to be removed
+ */
 void GameView::removeText(unsigned int id) {
     this->texts.erase(id);
 }
 
-//TODO: Simplify
+/**
+ * Adds a new game object to be displayed.
+ * 
+ * \param id The id of the new game object
+ * \param actorType The type of the game object
+ */
 void GameView::AddActor(unsigned int id, ActorType actorType) {
     ActorTypeData typeData = getActorDataFromType(actorType);
 
+    // Check <actorDataPerType> whether the buffers for this actor type are cached
     if (this->actorDataPerType.count(actorType) >= 1) {
         auto range = this->actorDataPerType.equal_range(actorType);
         for (auto& it = range.first; it != range.second; ++it) {
@@ -132,6 +185,7 @@ void GameView::AddActor(unsigned int id, ActorType actorType) {
         }
     }
 
+    // ActorData for this type doesn't exist yet, so it needs to be created
     std::shared_ptr<ActorDataView> newActorType = std::make_shared<ActorDataView>(typeData.indices.data(), typeData.positions.data(), typeData.positions.size() / 2, typeData.positions.size(), typeData.texturePath);
     this->actorDataPerType.insert({ actorType, newActorType });
 
@@ -139,6 +193,14 @@ void GameView::AddActor(unsigned int id, ActorType actorType) {
     this->actors.insert({ id, std::move(newActor) });
 }
 
+/**
+ * Draw a new bonus life in the UI.
+ * 
+ * Should be called when a player has gained a bonus life, so it can be
+ * displayed on the screen.
+ * 
+ * \param id The id for the new UI element
+ */
 void GameView::addPlayerLife(unsigned int id) {
     ActorTypeData typeData = getActorDataFromType(ActorType::Player);
 
@@ -160,7 +222,11 @@ void GameView::addPlayerLife(unsigned int id) {
     this->playerLivesUIObjects.push_back(std::move(newActor));
 }
 
+/**
+ * Draws all objects to the new frame.
+ */
 void GameView::Render() {
+    // Booster
     unsigned int count = 0;
     if (this->actors.count(10000) != 0) {
         auto booster = this->actors.find(10000);
@@ -176,6 +242,7 @@ void GameView::Render() {
         }
     }
 
+    // Game objects
     for (auto& actor : this->actors) {
         if (actor.second.id == 10000) {
             continue;
@@ -190,6 +257,7 @@ void GameView::Render() {
         count++;
     }
 
+    // UI - Player lives
     if (!this->playerLivesUIObjects.empty()) {
         this->playerLivesUIObjects.front().data->texture.Bind();
         this->playerLivesUIObjects.front().data->va.Bind();
@@ -201,7 +269,8 @@ void GameView::Render() {
             GLCall(glDrawElements(GL_TRIANGLES, object.data->ib.GetCount(), GL_UNSIGNED_INT, nullptr));
         }
     }
-
+    
+    // UI - Texts
     if (Text::texture) {
         Text::texture->Bind();
 
@@ -223,6 +292,9 @@ void GameView::Render() {
     }
 }
 
+/**
+ * Updates the view manager to mirror the model component.
+ */
 void GameView::Update() {
     // delete actors in view
     for (auto actor = this->actors.cbegin(), next_actor = actor; actor != this->actors.cend(); actor = next_actor)
@@ -288,6 +360,11 @@ void GameView::Update() {
 
 }
 
+/**
+ * Clear the new frame.
+ * 
+ * Is used remove contents of the last frame after it is displayed to the screen.
+ */
 void GameView::Clear() const {
     GLCall(glClear(GL_COLOR_BUFFER_BIT));
 }

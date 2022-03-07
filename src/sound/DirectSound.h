@@ -12,6 +12,11 @@
 #include <string>
 #include <vector>
 
+/**
+ * A wrapper for creating DirectSound buffers to manage sound for a single window context.
+ *
+ * Only supports .wav files with 44,100hz sampling, 16-bit and stereo.
+ */
 class DirectSound
 {
 private:
@@ -42,6 +47,11 @@ public:
 	DirectSound(const DirectSound& other);
 	~DirectSound();
 
+	/**
+	 * Represents a sound file to be used with the DirectSound wrapper.
+	 * 
+	 * Contains its buffer and a unique name to be referenced in the game loop.
+	 */
 	struct Sound {
 		IDirectSoundBuffer8* m_secondaryBuffer;
 		std::string fileName;

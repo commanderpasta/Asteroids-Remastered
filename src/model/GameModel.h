@@ -31,12 +31,9 @@ class GameModel {
 	LevelSystem levelSystem;
 	
 	steady_clock::time_point lastFrameTime;
-	steady_clock::time_point currentFrameTime;
 	steady_clock::time_point lastPlayerDeath;
 	steady_clock::time_point lastHyperSpaceActivation;
 	bool playerIsInHyperSpace;
-
-	unsigned int ticksPassed;
 public:
 	std::shared_ptr<PlayerModel> player;
 
@@ -52,6 +49,10 @@ public:
 	std::vector<std::shared_ptr<ProjectileModel>> projectiles;
 	std::vector <std::shared_ptr<ParticleModel>> particles;
 	std::map<unsigned int, std::shared_ptr<ActorModel>> actors;
+	
+	steady_clock::time_point currentFrameTime;
+
+	double ticksPassed;
 
 	enum class SoundAction {
 		PLAY, STOP, LOOP

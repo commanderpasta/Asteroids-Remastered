@@ -3,7 +3,7 @@
 #include "gl/Renderer.h"
 #include <GLFW/glfw3.h>
 
-#define GLFW_EXPOSE_NATIVE_WIN32
+#define GLFW_EXPOSE_NATIVE_WIN32 //get the HWND context from GLFW to use in DirectSound
 #include <GLFW/glfw3native.h>
 
 #include "Text.h"
@@ -16,15 +16,19 @@
 #include <memory>
 #include <map>
 
-
+/**
+ * View component of the game loop following the MVC pattern.
+ * 
+ * Includes rendering game object and UI, as well as a window context using GLFW and GLEW.
+ */
 class GameView {
-	GLFWwindow *window;
-	std::shared_ptr<GameModel> model;
-	std::multimap<ActorType, std::shared_ptr<ActorDataView>> actorDataPerType;
-	std::map<unsigned int, ActorView> actors;
-	std::map<unsigned int, Text> texts;
-	std::vector<ActorView> playerLivesUIObjects;
-	unsigned int scoreTextId;
+	GLFWwindow *window; /**< The GLFW window context for this game. */
+	std::shared_ptr<GameModel> model; /**< A reference to the model to get data from. */
+	std::multimap<ActorType, std::shared_ptr<ActorDataView>> actorDataPerType; /**< A map of all actor types with their buffer data, so the buffers can be accessed. */
+	std::map<unsigned int, ActorView> actors; /**< A map of all actors that are drawn in the game. */
+	std::map<unsigned int, Text> texts; /**< A map of all texts displayed in the game at the moment. */
+	std::vector<ActorView> playerLivesUIObjects; /**< A list of UI objects that show the player's current lives. */
+	unsigned int scoreTextId; /**< The id for the text UI that shows the current score. */
 public:
 	GameView(std::shared_ptr<GameModel> model);
 	~GameView();

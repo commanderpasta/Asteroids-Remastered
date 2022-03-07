@@ -3,6 +3,11 @@
 #include <chrono>
 using namespace std::chrono;
 
+/**
+ * Manages the level system of the game.
+ *
+ * Uses the current time to decide on level system logic like respawns, difficulty and level starts.
+ */
 class LevelSystem {
 	unsigned int currentLevel;
 	steady_clock::time_point lastTimeShipSpawned;

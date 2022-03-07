@@ -1,6 +1,9 @@
 #pragma once
 #include "ActorModel.h"
 
+/**
+ * Extends upon the <ActorModel> to represent a large asteroid.
+ */
 class AsteroidModel : public ActorModel {
 public:
 	static float radius;

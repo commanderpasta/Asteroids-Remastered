@@ -21,8 +21,8 @@ void GameModel::setCurrentTime() {
 	this->lastFrameTime = this->currentFrameTime;
 	this->currentFrameTime = steady_clock::now();
 
-	double timeSpan = duration_cast<duration<double>>(this->currentFrameTime - this->lastFrameTime).count();
-	this->ticksPassed = std::ceil(timeSpan * TICK_RATE);
+	//double timeSpan = duration_cast<duration<double>>(this->currentFrameTime - this->lastFrameTime).count();
+	//this->ticksPassed = timeSpan * TICK_RATE;
 }
 
 void GameModel::checkLevel() {
@@ -458,7 +458,7 @@ void GameModel::addShip(bool isLarge) {
 	this->actors.insert({ shipModel->id, shipModel });
 	this->ship = shipModel;
 
-	this->physicsEngine.addActor(shipModel->id, shipModel->position[0], shipModel->position[1], direction, 0.0f, 0.0f, 1.0f, 0.8f, shipModel->radius, true, AccelerationType::None);
+	this->physicsEngine.addActor(shipModel->id, shipModel->position[0], shipModel->position[1], direction, 0.0f, 0.0f, 1.0f, 0.8f, shipModel->radius, true, AccelerationType::Constant);
 	this->physicsEngine.setBoundByWindow(shipModel->id, false, true);
 }
 

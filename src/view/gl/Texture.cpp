@@ -4,39 +4,46 @@
 #include <iostream>
 #include <bitset>
 
+
+/**
+ * Creates a texture with OpenGL from a file.
+ * 
+ * 
+ * \param path The path of the texture file.
+ */
 Texture::Texture(const std::string& path) 
 	: m_RendererID(0), m_FilePath(path), m_LocalBuffer(nullptr), m_Width(0), m_Height(0), m_BPP(0) {
 
-	// CUSTOM .BMP IMPLEMENTATION (32-bit, uncompressed only)
 	std::ifstream stream(path, std::ios::binary);
 
 	int dataOffset;
 
 	if (stream.is_open()) {
-		// get total file size
+		// Use BITMAPFILEHEADER offsets to read metadata
+		// Get total file size
 		stream.seekg(0, std::ios::end);
 		int fileSize = stream.tellg();
 
-		// read offset of image data from file
+		// Get the offset for the image data
 		stream.seekg(10);
 		stream.read((char*)(&dataOffset), sizeof(int));
 
-		// read image height and width
+		// Get image height and width
 		stream.seekg(18);
 		stream.read((char*)(&m_Width), sizeof(int));
 		stream.read((char*)(&m_Height), sizeof(int));
 	
 		std::cout << "File size: " << fileSize << ", Data offset: " << dataOffset << ", widthOutput: " << m_Width << ", heightOutput: " << m_Height << std::endl;
 		
-		// read image data
+		// Read image data
 		stream.seekg(dataOffset);
 
 		m_LocalBuffer = new unsigned char [fileSize];
 		stream.read ((char*)m_LocalBuffer, fileSize - dataOffset);
 		stream.close();
 	}
-	//END EXTRACT HERE
 
+	// Create the texture in OpenGL
 	GLCall(glGenTextures(1, &m_RendererID));
 	GLCall(glBindTexture(GL_TEXTURE_2D, m_RendererID));
 	
@@ -51,15 +58,27 @@ Texture::Texture(const std::string& path)
 	delete m_LocalBuffer;
 }
 
+/**
+ * Deletes the corresponding texture in OpenGL.
+ */
 Texture::~Texture() {
 	GLCall(glDeleteTextures(1, &m_RendererID));
 }
 
+/**
+ * Binds the texture in OpenGL.
+ * 
+ * \param slot The texture slot to bind it to.
+ */
 void Texture::Bind(unsigned int slot) const {
 	GLCall(glActiveTexture(GL_TEXTURE0 + slot));
 	GLCall(glBindTexture(GL_TEXTURE_2D, m_RendererID));
 }
 
+/**
+ * Unbinds the texture in OpenGL.
+ * 
+ */
 void Texture::Unbind() const {
 	GLCall(glBindTexture(GL_TEXTURE_2D, 0));
 }

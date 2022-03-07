@@ -4,6 +4,11 @@
 
 #include <string>
 
+/**
+ * Wraps all vertex data including a texture for an object that can be drawn in the application.
+ *
+ * Can be reused across multiple object instances for better performance.
+ */
 class ActorDataView : public BaseDataView {
 public:
 	Texture texture;

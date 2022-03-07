@@ -5,7 +5,9 @@
 #include <string>
 #include <vector>
 
-
+/**
+ * Contains all data necessary to create a game object in OpenGL for an <ActorType>.
+ */
 struct ActorTypeData {
     std::string texturePath;
     std::string shaderPath;
@@ -13,6 +15,11 @@ struct ActorTypeData {
     std::vector<unsigned int> indices;
 };
 
+/**
+ * Get a random texture path when creating an asteroid for more variety.
+ * 
+ * \return The file path for the randomly selected texture.
+ */
 inline std::string getRandomAsteroidTexture() {
     int randomInt = rand() % 4;
     switch (randomInt) {
@@ -29,6 +36,12 @@ inline std::string getRandomAsteroidTexture() {
     }
 }
 
+/**
+ * Get the related texture, shader and vertex data for an <ActorType>.
+ * 
+ * \param type The <ActorType> to get the data for.
+ * \return An <ActorTypeData> structure containing the necessary data for OpenGL.
+ */
 inline ActorTypeData getActorDataFromType(ActorType type) {
     ActorTypeData data;
 

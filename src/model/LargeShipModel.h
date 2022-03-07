@@ -7,6 +7,11 @@
 #include <chrono>
 using namespace std::chrono;
 
+/**
+ * Extends upon the BaseShipModel to represent a large ship.
+ *
+ * Contains the firing logic to support firing in random directions.
+ */
 class LargeShipModel : public BaseShipModel {
 public:
 	static float radius;

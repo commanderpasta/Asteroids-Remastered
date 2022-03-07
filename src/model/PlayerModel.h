@@ -6,6 +6,11 @@
 #include <chrono>
 using namespace std::chrono;
 
+/**
+ * Extends upon the ActorModel to represent the ship that is controlled by the player.
+ * 
+ * It contains logic for how the booster behaved, and manages the cooldown of its projectiles. 
+ */
 class PlayerModel : public ActorModel {
 public:
 	static float radius;
