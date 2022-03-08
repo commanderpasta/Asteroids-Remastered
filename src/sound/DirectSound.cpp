@@ -1,5 +1,8 @@
 #include "DirectSound.h"
 
+/**
+ * Creates an instance of the DirectSound API.
+ */
 DirectSound::DirectSound()
 {
 	m_DirectSound = 0;
@@ -16,13 +19,21 @@ DirectSound::~DirectSound()
 {
 }
 
+/**
+ * Initializes the DirectSound with the default audio device.
+ * 
+ * Formats the primary buffer for .WAV files with 44,100Hz sample rate in 16-bit stereo.
+ * 
+ * \param hwnd The window context to use DirectSound with.
+ * \return Whether the initialization was successful.
+ */
 bool DirectSound::initialize(HWND hwnd)
 {
 	HRESULT result;
 	DSBUFFERDESC bufferDesc;
 	WAVEFORMATEX waveFormat;
 
-	// Initialize the direct sound interface pointer for the default sound device.
+	// Initialize DirectSound for the default sound device.
 	result = DirectSoundCreate8(NULL, &m_DirectSound, NULL);
 	if (FAILED(result))
 	{
@@ -36,7 +47,7 @@ bool DirectSound::initialize(HWND hwnd)
 		return false;
 	}
 
-	// Setup the primary buffer description.
+	// Setup the primary buffer.
 	bufferDesc.dwSize = sizeof(DSBUFFERDESC);
 	bufferDesc.dwFlags = DSBCAPS_PRIMARYBUFFER | DSBCAPS_CTRLVOLUME;
 	bufferDesc.dwBufferBytes = 0;
@@ -52,7 +63,7 @@ bool DirectSound::initialize(HWND hwnd)
 	}
 
 	// Setup the format of the primary sound bufffer.
-	// In this case it is a .WAV file recorded at 44,100 samples per second in 16-bit stereo (cd audio format).
+	// It is set up for .WAV files recorded with a 44,100Hz sample rate in 16-bit stereo.
 	waveFormat.wFormatTag = WAVE_FORMAT_PCM;
 	waveFormat.nSamplesPerSec = 44100;
 	waveFormat.wBitsPerSample = 16;
@@ -61,7 +72,7 @@ bool DirectSound::initialize(HWND hwnd)
 	waveFormat.nAvgBytesPerSec = waveFormat.nSamplesPerSec * waveFormat.nBlockAlign;
 	waveFormat.cbSize = 0;
 
-	// Set the primary buffer to be the wave format specified.
+	// Set the primary buffer to the specified wave format.
 	result = m_primaryBuffer->SetFormat(&waveFormat);
 	if (FAILED(result))
 	{
@@ -71,38 +82,47 @@ bool DirectSound::initialize(HWND hwnd)
 	return true;
 }
 
+/**
+ * Begins shutdown of the DirectSound API instance.
+ */
 void DirectSound::shutdown()
 {
 	// Release the secondary buffer.
 	for (Sound sound : this->sounds) {
-		unloadSound(std::move(sound));
+		unloadSoundBuffer(std::move(sound));
 	}
 
-	// Shutdown the Direct Sound API.
 	shutdownDirectSound();
-
-	return;
 }
 
+/**
+ * Releases the primary buffer and DirectSound interface pointers.
+ */
 void DirectSound::shutdownDirectSound()
 {
-	// Release the primary sound buffer pointer.
 	if (m_primaryBuffer)
 	{
 		m_primaryBuffer->Release();
 		m_primaryBuffer = 0;
 	}
 
-	// Release the direct sound interface pointer.
 	if (m_DirectSound)
 	{
 		m_DirectSound->Release();
 		m_DirectSound = 0;
 	}
-
-	return;
 }
 
+/**
+ * Loads a new sound from a file.
+ * 
+ * Checks the file header against the API specification for .WAV files
+ * and assigns buffers and a <Sound> object to it.
+ * 
+ * \param name The name to use as a reference for the sound.
+ * \param fileName The file path of the sound.
+ * \return Returns a bool whether the sound was loaded succesfully.
+ */
 bool DirectSound::loadSound(std::string name, std::string fileName)
 {
 	int error;
@@ -214,7 +234,7 @@ bool DirectSound::loadSound(std::string name, std::string fileName)
 		return false;
 	}
 
-	// Test the buffer format against the direct sound 8 interface and create the secondary buffer.
+	// Test the buffer format against the DirectSound8 interface and create the secondary buffer.
 	result = tempBuffer->QueryInterface(IID_IDirectSoundBuffer8, (void**)&secondaryBuffer);
 	if (FAILED(result))
 	{
@@ -249,14 +269,14 @@ bool DirectSound::loadSound(std::string name, std::string fileName)
 		return false;
 	}
 
-	// Lock the secondary buffer to write wave data into it.
+	// Lock the secondary buffer to write data into it.
 	result = secondaryBuffer->Lock(0, waveFileHeader.dataSize, (void**)&bufferPtr, (DWORD*)&bufferSize, NULL, 0, 0);
 	if (FAILED(result))
 	{
 		return false;
 	}
 
-	// Copy the wave data into the buffer.
+	// Copy the data into the buffer.
 	memcpy(bufferPtr, waveData, waveFileHeader.dataSize);
 
 	// Unlock the secondary buffer after the data has been written to it.
@@ -278,18 +298,31 @@ bool DirectSound::loadSound(std::string name, std::string fileName)
 	return true;
 }
 
-void DirectSound::unloadSound(Sound&& sound)
+/**
+ * Unloads the secondary buffer of a managed sound.
+ * 
+ * \param sound The sound to unload the buffer for.
+ */
+void DirectSound::unloadSoundBuffer(Sound&& sound)
 {
-	// Release the secondary sound buffer.
 	if (sound.m_secondaryBuffer)
 	{
 		sound.m_secondaryBuffer->Release();
 		sound.m_secondaryBuffer = 0;
 	}
-
-	return;
 }
 
+/**
+ * Plays a loaded <Sound>.
+ * 
+ * Can be played in an endless loop until it is stopped manually.
+ * 
+ * @see stopSound
+ * 
+ * \param sound The <Sound> to play.
+ * \param asLoop A bool that says whether the sound should play in a loop. The loop can be stopped manually.
+ * \return A bool that says whether the sound has been played successfully.
+ */
 bool DirectSound::playSound(Sound&& sound, bool asLoop)
 {
 	HRESULT result;
@@ -301,8 +334,8 @@ bool DirectSound::playSound(Sound&& sound, bool asLoop)
 		return false;
 	}
 
-	// Set volume of the buffer to 100%.
-	result = sound.m_secondaryBuffer->SetVolume(-1000);
+	//Plays the sound at ~10db below 100%
+	result = sound.m_secondaryBuffer->SetVolume(-1000); 
 	if (FAILED(result))
 	{
 		return false;
@@ -310,9 +343,9 @@ bool DirectSound::playSound(Sound&& sound, bool asLoop)
 
 	// Play the contents of the secondary sound buffer.
 	if (asLoop) {
-		result = sound.m_secondaryBuffer->Play(0, 0, DSBPLAY_LOOPING); //0, 0, DSBPLAY_LOOPING for loop
+		result = sound.m_secondaryBuffer->Play(0, 0, DSBPLAY_LOOPING); //DSBPLAY_LOOPING for loop
 	} else {
-		result = sound.m_secondaryBuffer->Play(0, 0, 0); //0, 0, DSBPLAY_LOOPING for loop
+		result = sound.m_secondaryBuffer->Play(0, 0, 0);
 	}
 
 	if (FAILED(result))
@@ -325,6 +358,14 @@ bool DirectSound::playSound(Sound&& sound, bool asLoop)
 
 }
 
+/**
+ * Stops a sound from playing.
+ * 
+ * Can be used to stop sounds that are playing in a loop.
+ * 
+ * \param sound The sound that should be stopped.
+ * \return A bool that says whether the sound has been stopped successfully.
+ */
 bool DirectSound::stopSound(Sound&& sound)
 {
 	HRESULT result;

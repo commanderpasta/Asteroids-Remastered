@@ -20,6 +20,9 @@
 class DirectSound
 {
 private:
+	/**
+	 * Represents the header block of a .wav file.
+	 */
 	struct WaveHeaderType
 	{
 		char chunkId[4];
@@ -37,8 +40,8 @@ private:
 		unsigned long dataSize;
 	};
 
-	IDirectSound8* m_DirectSound;
-	IDirectSoundBuffer* m_primaryBuffer;
+	IDirectSound8* m_DirectSound; /** Pointer to an instance of the DirectSound API. */
+	IDirectSoundBuffer* m_primaryBuffer; /** Holds a pointer to the primary buffer. The primary buffer acts as the main buffer for all sounds for a window context. */
 
 	void shutdownDirectSound();
 
@@ -58,7 +61,7 @@ public:
 		std::string name;
 		bool isLooping;
 	};
-	std::vector<Sound> sounds;
+	std::vector<Sound> sounds; /** A list that holds all loaded sounds that can be played. */
 
 	bool initialize(HWND hwnd);
 	void shutdown();
@@ -66,5 +69,5 @@ public:
 	bool loadSound(std::string name, std::string fileName);
 	bool playSound(Sound&& sound, bool asLoop);
 	bool stopSound(Sound&& sound);
-	void unloadSound(Sound&& sound);
+	void unloadSoundBuffer(Sound&& sound);
 };
