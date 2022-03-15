@@ -34,6 +34,8 @@ class GameView {
 
 	unsigned int boosterId;
 
+	unsigned int gameOverId;
+
 	void updateFrameTime();
 public:
 	GameView(std::shared_ptr<GameModel> model);
@@ -54,6 +56,8 @@ public:
 	void addPlayerLifeUI(unsigned int id);
 	void addText(unsigned int id, std::string text, float x, float y);
 	void removeText(unsigned int id);
+
+	void gameOver();
 
 	HWND getHwnd();
 	std::vector<std::string> getInput();
