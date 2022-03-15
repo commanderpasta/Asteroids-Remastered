@@ -7,11 +7,10 @@
 
 /**
  * Creates a texture with OpenGL from a file.
- * 
- * 
+ *
  * \param path The path of the texture file.
  */
-Texture::Texture(const std::string& path) 
+Texture::Texture(const std::string& path)
 	: m_RendererID(0), m_FilePath(path), m_LocalBuffer(nullptr), m_Width(0), m_Height(0), m_BPP(0) {
 
 	std::ifstream stream(path, std::ios::binary);
@@ -22,24 +21,35 @@ Texture::Texture(const std::string& path)
 		// Use BITMAPFILEHEADER offsets to read metadata
 		// Get total file size
 		stream.seekg(0, std::ios::end);
+
 		int fileSize = stream.tellg();
 
-		// Get the offset for the image data
-		stream.seekg(10);
-		stream.read((char*)(&dataOffset), sizeof(int));
+		if (path.find(".bff") != std::string::npos) {
+			stream.seekg(2);
+			stream.read((char*)(&m_Width), sizeof(int));
+			stream.read((char*)(&m_Height), sizeof(int));
 
-		// Get image height and width
-		stream.seekg(18);
-		stream.read((char*)(&m_Width), sizeof(int));
-		stream.read((char*)(&m_Height), sizeof(int));
-	
+			dataOffset = 276;
+		} else {
+
+			// Get the offset for the image data
+			stream.seekg(10);
+			stream.read((char*)(&dataOffset), sizeof(int));
+
+			// Get image height and width
+			stream.seekg(18);
+			stream.read((char*)(&m_Width), sizeof(int));
+			stream.read((char*)(&m_Height), sizeof(int));
+		}
+
 		std::cout << "File size: " << fileSize << ", Data offset: " << dataOffset << ", widthOutput: " << m_Width << ", heightOutput: " << m_Height << std::endl;
-		
+
 		// Read image data
 		stream.seekg(dataOffset);
 
-		m_LocalBuffer = new unsigned char [fileSize];
-		stream.read ((char*)m_LocalBuffer, fileSize - dataOffset);
+		m_LocalBuffer = new unsigned char[fileSize];
+		stream.read((char*)m_LocalBuffer, fileSize - dataOffset);
+
 		stream.close();
 	}
 

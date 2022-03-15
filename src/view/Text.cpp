@@ -107,10 +107,10 @@ Text::Text(unsigned int id, std::string text, float x, float y, float windowX, f
 
         //todo optimize
         typeData.positions = {
-            -15.0f, -30.0f, 0.0f, 0.875f,
-            15.0f, -30.0f, 0.125f, 0.875f,
-            15.0f, 30.0f, 0.125f, 1.0f,
-            -15.0f, 30.0f, 0.0f, 1.0f
+            -15.0f, -30.0f, 0.0f, 0.125f,
+            15.0f, -30.0f, 0.125f, 0.125f,
+            15.0f, 30.0f, 0.125f, 0.0f,
+            -15.0f, 30.0f, 0.0f, 0.0f
         };
 
         auto vertexData = std::make_shared<BaseDataView>(typeData.indices.data(), typeData.positions.data(), 8, typeData.positions.size());
@@ -118,7 +118,7 @@ Text::Text(unsigned int id, std::string text, float x, float y, float windowX, f
 		Character charRenderData(std::move(vertexData), typeData.shaderPath, windowX, windowY);
 
         charRenderData.shader.Bind();
-        charRenderData.shader.SetUniform2f("u_texCoordShift", column * 0.125f, - (row * 0.125f));
+        charRenderData.shader.SetUniform2f("u_texCoordShift", column * 0.125f, row * 0.125f);
 
         float position[2] = { x + counter * 30, y };
         charRenderData.setPosition(position, 0.0f);
@@ -132,5 +132,5 @@ Text::Text(unsigned int id, std::string text, float x, float y, float windowX, f
  * Initializes a sample font.
  */
 void Text::setup() {
-    Text::texture = std::make_shared<Texture>("res/textures/font/ExportedFont.bmp");
+    Text::texture = std::make_shared<Texture>("res/textures/font/hyperspace.bff");
 }
