@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Maths.h"
+#include "../Maths.h"
 
 #include "ActorModel.h"
 #include "PlayerModel.h"
@@ -16,7 +16,7 @@
 #include "LevelSystem.h"
 #include "physics/Engine.h"
 
-#include "sound/DirectSound.h"
+#include "../sound/DirectSound.h"
 
 #include <vector>
 #include <memory>

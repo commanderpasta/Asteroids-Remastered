@@ -1,6 +1,6 @@
 #pragma once
 
-#include "model/ActorTypes.h"
+#include "../src/model/ActorTypes.h"
 
 #include <string>
 #include <vector>
@@ -24,15 +24,15 @@ inline std::string getRandomAsteroidTexture() {
     int randomInt = rand() % 4;
     switch (randomInt) {
     case 0:
-        return "res/textures/asteroid1.bmp";
+        return "res/textures/Asteroid1.bmp";
     case 1:
-        return "res/textures/asteroid2.bmp";
+        return "res/textures/Asteroid2.bmp";
     case 2:
-        return "res/textures/asteroid3.bmp";
+        return "res/textures/Asteroid3.bmp";
     case 3:
-        return "res/textures/asteroid4.bmp";
+        return "res/textures/Asteroid4.bmp";
     default:
-        return "res/textures/asteroid1.bmp";
+        return "res/textures/Asteroid1.bmp";
     }
 }
 

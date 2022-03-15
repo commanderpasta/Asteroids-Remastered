@@ -2,7 +2,7 @@
 
 #include "BaseShipModel.h"
 
-#include "Maths.h"
+#include "../Maths.h"
 
 #include <chrono>
 using namespace std::chrono;

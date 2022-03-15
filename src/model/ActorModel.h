@@ -3,7 +3,7 @@
 #include <string>
 
 #include "ActorTypes.h"
-#include "IDGen.h"
+#include "../IDGen.h"
 
 /**
  * Base class for every in-game actor. 

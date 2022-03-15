@@ -8,7 +8,7 @@
 
 #include "Text.h"
 #include "ActorView.h"
-#include "IDGen.h"
+#include "../IDGen.h"
 
 #include "../model/GameModel.h"
 
