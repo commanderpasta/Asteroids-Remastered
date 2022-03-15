@@ -7,7 +7,7 @@
  * \param windowY The y-axis boundary for the game's world space.
  */
 GameModel::GameModel(unsigned int windowX, unsigned int windowY)
-	: windowX(windowX), currentTickTime(steady_clock::now()), playerIsInHyperSpace(false), windowY(windowY), physicsEngine(windowX, windowY), score(0), playerLives(3), pointsUntilExtraLive(10000) {
+	: windowX(windowX), currentTickTime(steady_clock::now()), playerIsInHyperSpace(false), windowY(windowY), physicsEngine(windowX, windowY), score(0), playerLives(1), pointsUntilExtraLive(10000) {
 	this->lastHyperSpaceActivation = this->currentTickTime;
 	this->lastBackgroundSound = this->currentTickTime;
 	this->levelSystem.setBeginTime(currentTickTime);
@@ -347,6 +347,11 @@ void GameModel::playerRotateRight() {
 	}
 }
 
+
+bool GameModel::isGameOver() {
+	return this->playerLives == 0;
+}
+
 /**
  * Checks whether the player is dead and can respawn.
  */
@@ -459,7 +464,9 @@ void GameModel::checkCollisionWithProjectile(unsigned int projectileId, unsigned
 		return;
 	} else {
 		this->removeActor(projectileId);
-		this->addPointsFromActor(targetId);
+		if (projectile->ownerId == this->player->id) {
+			this->addPointsFromActor(targetId);
+		}
 		this->removeActor(targetId);
 	}
 }

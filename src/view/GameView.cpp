@@ -9,7 +9,7 @@
  * 
  * \param model The MVC model used for this game instance.
  */
-GameView::GameView(std::shared_ptr<GameModel> model) : model(model), window(nullptr), boosterId(UINT_MAX) {
+GameView::GameView(std::shared_ptr<GameModel> model) : model(model), window(nullptr), boosterId(UINT_MAX), gameOverId(UINT_MAX) {
     glfwInit(); // Attempt to intialize the library
 
     this->window = glfwCreateWindow(this->model->windowX, this->model->windowY, "Asteroids: Remastered", NULL, NULL); //glfwGetPrimaryMonitor()
@@ -400,4 +400,11 @@ void GameView::update() {
  */
 void GameView::clearFrameBuffer() const {
     GLCall(glClear(GL_COLOR_BUFFER_BIT));
+}
+
+void GameView::gameOver() {
+    if (this->gameOverId == UINT_MAX) {
+        this->gameOverId = generateId();
+        this->addText(this->gameOverId, "GAME OVER", this->model->windowX / 2.0f - 4.5f * 30.0f, 2.0f * this->model->windowY / 3.0f);
+    }
 }

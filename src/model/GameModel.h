@@ -105,6 +105,7 @@ public:
 	void checkShipLifetime();
 	void setShipDirection();
 	void shipFireProjectile();
+	bool isGameOver();
 
 
 	void checkLevel();

@@ -77,10 +77,10 @@ void GameController::update() {
 
     bool isGameOver = false;
 
-    while (!view.shouldWindowClose())
+    while (!this->view.shouldWindowClose())
     {
         if (isGameOver) {
-            break; //TODO: END SCREEN
+            this->view.gameOver(); //TODO: END SCREEN
         }
 
         // update model at a fixed tick rate (TICKS_PER_SECOND), independently from view 
@@ -89,46 +89,47 @@ void GameController::update() {
         while (steady_clock::now() > nextGameTick && loops < MAX_FRAMESKIP) {
             this->model->setCurrentTime();
 
-            if (this->model->playerLives == 0) {
-                isGameOver = true; //TODO: END SCREEN
-            }
+            isGameOver = this->model->isGameOver();
 
             this->model->checkParticleLifetimes();
             this->model->checkProjectileLifetimes();
             this->model->setShipDirection();
             this->model->checkShipLifetime();
 
-            this->model->checkLevel();
-
-            this->model->checkPlayerDeath();
-            this->model->checkPlayerHyperSpace();
-            this->model->shipFireProjectile();
-
             std::vector<std::string> keyboardInput = this->view.getInput();
-            if (std::find(keyboardInput.begin(), keyboardInput.end(), "FORWARD") != keyboardInput.end()) {
-                this->model->setPlayerAccelerating(true);
-            }
-            else {
-                this->model->setPlayerAccelerating(false);
-            }
 
-            if (std::find(keyboardInput.begin(), keyboardInput.end(), "SPACE") != keyboardInput.end()) {
-                this->model->playerFireProjectile();
-            }
+            if (!isGameOver) {
+                this->model->checkLevel();
 
-            if (std::find(keyboardInput.begin(), keyboardInput.end(), "SHIFT") != keyboardInput.end()) {
-                this->model->activateHyperSpace();
-            }
+                this->model->checkPlayerDeath();
+                this->model->checkPlayerHyperSpace();
+                this->model->shipFireProjectile();
 
-            if (std::find(keyboardInput.begin(), keyboardInput.end(), "RIGHT") != keyboardInput.end()) {
-                this->model->playerRotateRight();
-            }
+                if (std::find(keyboardInput.begin(), keyboardInput.end(), "FORWARD") != keyboardInput.end()) {
+                    this->model->setPlayerAccelerating(true);
+                }
+                else {
+                    this->model->setPlayerAccelerating(false);
+                }
 
-            else if (std::find(keyboardInput.begin(), keyboardInput.end(), "LEFT") != keyboardInput.end()) {
-                this->model->playerRotateLeft();
-            }
+                if (std::find(keyboardInput.begin(), keyboardInput.end(), "SPACE") != keyboardInput.end()) {
+                    this->model->playerFireProjectile();
+                }
 
-            //this->view.checkWindowResize();
+                if (std::find(keyboardInput.begin(), keyboardInput.end(), "SHIFT") != keyboardInput.end()) {
+                    this->model->activateHyperSpace();
+                }
+
+                if (std::find(keyboardInput.begin(), keyboardInput.end(), "RIGHT") != keyboardInput.end()) {
+                    this->model->playerRotateRight();
+                }
+
+                else if (std::find(keyboardInput.begin(), keyboardInput.end(), "LEFT") != keyboardInput.end()) {
+                    this->model->playerRotateLeft();
+                }
+
+                //this->view.checkWindowResize();
+            }         
 
             this->model->updatePositions();
             this->model->checkCollisions();
