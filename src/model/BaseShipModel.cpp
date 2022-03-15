@@ -35,7 +35,7 @@ BaseShipModel::~BaseShipModel() {
  * \return Returns the resulting MovingState of the ship.
  */
 MovingState BaseShipModel::changeDirection() {
-	bool upOrDown = rand() % 2;
+	bool upOrDown = randomBool();
 
 	switch (this->movingState) {
 	case MovingState::Left:

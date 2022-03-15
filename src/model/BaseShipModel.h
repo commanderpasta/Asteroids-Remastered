@@ -1,6 +1,7 @@
 #pragma once
 
 #include "ActorModel.h"
+#include "Maths.h"
 
 #include <chrono>
 using namespace std::chrono;

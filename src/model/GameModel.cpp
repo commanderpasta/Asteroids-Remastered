@@ -53,7 +53,7 @@ void GameModel::checkLevel() {
 		}
 		else {
 			if (this->levelSystem.canShipSpawn(this->currentTickTime)) {
-				this->addShip(rand() % 2);
+				this->addShip(randomBool());
 			}
 
 			float backgroundSoundFrequency = 0.5 - 0.06 * min(3, this->levelSystem.getAmountOfAsteroidSpawns() - this->asteroids.size());
@@ -108,7 +108,7 @@ void GameModel::addAsteroid(float startingPosition[2]) {
 	this->actors.insert({asteroidModel->id, asteroidModel});
 	this->asteroids.push_back(asteroidModel);
 
-	this->physicsEngine.addActor(asteroidModel->id, asteroidModel->position[0], asteroidModel->position[1], getRandomFloat(0.0f, 2 * MY_PI), 0.0f, 0.0f, 0.5f, 0.5f, asteroidModel->radius, false, AccelerationType::Linear);
+	this->physicsEngine.addActor(asteroidModel->id, asteroidModel->position[0], asteroidModel->position[1], getRandomFloat(0.0f, 2 * MY_PI), 0.0f, 0.0f, 0.5f, 0.5f, asteroidModel->radius, false, AccelerationType::Constant);
 }
 
 /**
@@ -121,7 +121,7 @@ void GameModel::addMediumAsteroid(float startingPosition[2]) {
 	this->actors.insert({ asteroidModel->id, asteroidModel });
 	this->mediumAsteroids.push_back(asteroidModel);
 
-	this->physicsEngine.addActor(asteroidModel->id, asteroidModel->position[0], asteroidModel->position[1], getRandomFloat(0.0f, 2 * MY_PI), 0.0f, 0.0f, 1.5f, 1.5f, asteroidModel->radius, false, AccelerationType::Linear);
+	this->physicsEngine.addActor(asteroidModel->id, asteroidModel->position[0], asteroidModel->position[1], getRandomFloat(0.0f, 2 * MY_PI), 0.0f, 0.0f, 1.5f, 1.5f, asteroidModel->radius, false, AccelerationType::Constant);
 }
 
 /**
@@ -134,7 +134,7 @@ void GameModel::addSmallAsteroid(float startingPosition[2]) {
 	this->actors.insert({ asteroidModel->id, asteroidModel });
 	this->smallAsteroids.push_back(asteroidModel);
 
-	this->physicsEngine.addActor(asteroidModel->id, asteroidModel->position[0], asteroidModel->position[1], getRandomFloat(0.0f, 2 * MY_PI), 0.0f, 0.0f, 1.5f, 1.5f, asteroidModel->radius, false, AccelerationType::Linear);
+	this->physicsEngine.addActor(asteroidModel->id, asteroidModel->position[0], asteroidModel->position[1], getRandomFloat(0.0f, 2 * MY_PI), 0.0f, 0.0f, 1.5f, 1.5f, asteroidModel->radius, false, AccelerationType::Constant);
 }
 
 /**
