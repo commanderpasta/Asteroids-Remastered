@@ -12,7 +12,7 @@ float BaseShipModel::radius = 20.0f;
  * \param startOnLeft A bool that says whether the ship starts on the left and will move LTR or vice versa.
  * \param shipType Whether it is a large or small ship.
  */
-BaseShipModel::BaseShipModel(float startingPosition[3], steady_clock::time_point timeOfSpawn, bool startOnLeft, ActorType shipType)
+BaseShipModel::BaseShipModel(float startingPosition[2], steady_clock::time_point timeOfSpawn, bool startOnLeft, ActorType shipType)
 	: ActorModel(startingPosition, 0, shipType), lastChangeOfDirection(timeOfSpawn), projectileCooldown(timeOfSpawn), activeProjectileCount(0) {
 	if (startOnLeft) {
 		this->movingState = MovingState::Right;

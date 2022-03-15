@@ -1,7 +1,4 @@
 #include "ActorModel.h"
-
-unsigned int idCount = 0; // TODO: move to model
-
 /**
  * Creates a new game object.
  * 
@@ -11,9 +8,8 @@ unsigned int idCount = 0; // TODO: move to model
  * \param rotation The object's initial orientation.
  * \param actorType The type of object it represents.
  */
-ActorModel::ActorModel(float startingPosition[3], float rotation, ActorType actorType)
-	: position{ startingPosition[0], startingPosition[1], startingPosition[2] }, id(idCount), rotation(rotation), actorType(actorType) {
-	idCount++;
+ActorModel::ActorModel(float startingPosition[2], float rotation, ActorType actorType)
+	: position{ startingPosition[0], startingPosition[1] }, id(generateId()), rotation(rotation), actorType(actorType) {
 }
 
 ActorModel::~ActorModel() {

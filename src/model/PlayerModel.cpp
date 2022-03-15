@@ -8,7 +8,7 @@ float PlayerModel::radius = 9.0f;
  * \param startingPosition The initial x,y,z position of the player in world space.
  * \param rotation The initial orientation of the player.
  */
-PlayerModel::PlayerModel(float startingPosition[3], float rotation)
+PlayerModel::PlayerModel(float startingPosition[2], float rotation)
 	: ActorModel(startingPosition, rotation, ActorType::Player), projectileCooldown(std::chrono::seconds(1)), activeProjectileCount(0), isAccelerating(false), isBoosterActive(false) {
 }
 

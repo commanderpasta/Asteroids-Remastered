@@ -8,7 +8,7 @@ float MediumAsteroidModel::radius = 15.0f;
  *
  * \param startingPosition The initial x,y,z position of the asteroid in world space.
  */
-MediumAsteroidModel::MediumAsteroidModel(float startingPosition[3])
+MediumAsteroidModel::MediumAsteroidModel(float startingPosition[2])
 	: ActorModel(startingPosition, 0, ActorType::AsteroidMedium) {
 }
 

@@ -20,7 +20,7 @@ public:
 	bool isAccelerating; /**< A bool that described whether the player is accelerating. */
 	bool isBoosterActive; /**< Describes whether the player's booster is bursting. */
 
-	PlayerModel(float startingPosition[3], float rotation);
+	PlayerModel(float startingPosition[2], float rotation);
 	~PlayerModel();
 
 	bool fireProjectileIfOffCooldown(steady_clock::time_point currentTime);

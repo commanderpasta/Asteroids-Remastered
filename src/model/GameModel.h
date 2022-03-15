@@ -30,10 +30,11 @@ class GameModel {
 	PhysicsEngine physicsEngine; /**< The physics engine that manages movement and collision for this model. */
 	LevelSystem levelSystem; /**< The level system of this game instance. */
 
-	steady_clock::time_point lastPlayerDeath; /**< The last time the player has died. */
 	steady_clock::time_point lastHyperSpaceActivation; /**< The last time the player has entered hyperspace. */
 	bool playerIsInHyperSpace; /**< A bool that says whether the player is in hyperspace in the current tick. */
 public:
+	steady_clock::time_point lastPlayerDeath; /**< The last time the player has died. */
+
 	std::shared_ptr<PlayerModel> player; /**< A reference to the player ship if it is alive. */
 
 	unsigned int score; /**< The current game's score. */
@@ -70,7 +71,7 @@ public:
 		std::string soundName;
 	};
 
-	std::vector<std::string> soundFileNames; /**< A list of all available sounds by their names. */
+	std::vector<std::string> soundFileList; /**< A list of all available sounds by their names. */
 	std::vector<SoundEvent> soundEvents; /**< A list of all soundEvents to perform after this game tick. */
 
 	bool backgroundSoundSwitch; /**< A switch to alternate between a high-/low pitch background sound. */
@@ -79,21 +80,21 @@ public:
 	GameModel(unsigned int windowX, unsigned int windowY);
 	~GameModel();
 	
-	void Setup();
+	void setup();
 	void setCurrentTime();
 
-	void AddPlayer(float startingPosition[3], float rotation);
-	void AddAsteroid(float startingPosition[3]);
-	void addMediumAsteroid(float startingPosition[3]);
-	void addSmallAsteroid(float startingPosition[3]);
+	void addPlayer(float startingPosition[2], float rotation);
+	void addAsteroid(float startingPosition[2]);
+	void addMediumAsteroid(float startingPosition[2]);
+	void addSmallAsteroid(float startingPosition[2]);
 	void addShip(bool isLarge);
-	void spawnDeathParticles(float sourcePosition[3], ActorType sourceType);
+	void spawnDeathParticles(float sourcePosition[2], ActorType sourceType);
 
 	void removeActor(unsigned int id);
 
 	void setPlayerAccelerating(bool isAccelerating);
-	void RotatePlayerRight();
-	void RotatePlayerLeft();
+	void playerRotateRight();
+	void playerRotateLeft();
 	void playerFireProjectile();
 
 	void updatePositions();
@@ -113,5 +114,5 @@ public:
 	void checkPlayerHyperSpace();
 	void activateHyperSpace();
 
-	void clearSoundChanges();
+	void clearSoundEvents();
 };

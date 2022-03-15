@@ -3,10 +3,9 @@
 /**
  * Creates an instance of the DirectSound API.
  */
-DirectSound::DirectSound()
-{
-	m_DirectSound = 0;
-	m_primaryBuffer = 0;
+DirectSound::DirectSound() {
+	this->m_DirectSound = 0;
+	this->m_primaryBuffer = 0;
 }
 
 
@@ -20,7 +19,7 @@ DirectSound::~DirectSound()
 }
 
 /**
- * Initializes the DirectSound with the default audio device.
+ * Initializes DirectSound with the default audio device.
  * 
  * Formats the primary buffer for .WAV files with 44,100Hz sample rate in 16-bit stereo.
  * 

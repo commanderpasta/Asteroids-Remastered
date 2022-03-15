@@ -7,7 +7,7 @@
 class MediumAsteroidModel : public ActorModel {
 public:
 	static float radius;
-	MediumAsteroidModel(float startingPosition[3]);
+	MediumAsteroidModel(float startingPosition[2]);
 	~MediumAsteroidModel();
 
 	unsigned int getPointsValue();

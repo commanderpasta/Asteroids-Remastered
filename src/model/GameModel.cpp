@@ -12,7 +12,7 @@ GameModel::GameModel(unsigned int windowX, unsigned int windowY)
 	this->lastBackgroundSound = this->currentTickTime;
 	this->levelSystem.setBeginTime(currentTickTime);
 
-	this->soundFileNames = {"background1", "background2", "booster", "extralife", "projectile", "ship1", "ship2", "ship3", "explosion1"};
+	this->soundFileList = {"background1", "background2", "booster", "extralife", "projectile", "ship1", "ship2", "ship3", "explosion1"};
 }
 
 GameModel::~GameModel() {
@@ -21,9 +21,9 @@ GameModel::~GameModel() {
 /**
  * Initializes the player at the start of the game.
  */
-void GameModel::Setup() {
-	float initialPlayerPosition[3] = { 200.0f, 200.0f, 0.0f };
-	this->AddPlayer(initialPlayerPosition, 0.0f);
+void GameModel::setup() {
+	float initialPlayerPosition[2] = { 200.0f, 200.0f };
+	this->addPlayer(initialPlayerPosition, 0.0f);
 }
 
 /**
@@ -76,8 +76,8 @@ void GameModel::checkLevel() {
 			unsigned int spawnAsteroidCount = this->levelSystem.getAmountOfAsteroidSpawns();
 
 			for (unsigned int i = 0; i < spawnAsteroidCount; i++) {
-				float initialAsteroidPosition[3] = { getRandomFloat(0.0f, windowX), getRandomFloat(0.0f, windowY), 0.0f };
-				this->AddAsteroid(initialAsteroidPosition);
+				float initialAsteroidPosition[2] = { getRandomFloat(0.0f, windowX), getRandomFloat(0.0f, windowY) };
+				this->addAsteroid(initialAsteroidPosition);
 			}
 		}
 	}
@@ -90,7 +90,7 @@ void GameModel::checkLevel() {
  * \param startingPosition The initial x,y,z position of the player in the world space.
  * \param rotation The initial orientation of the player's ship.
  */
-void GameModel::AddPlayer(float startingPosition[3], float rotation) {
+void GameModel::addPlayer(float startingPosition[2], float rotation) {
 	std::shared_ptr<PlayerModel> playerModel = std::make_shared<PlayerModel>(startingPosition, rotation);
 	this->actors.insert({playerModel->id, playerModel});
 	this->player = playerModel;
@@ -103,7 +103,7 @@ void GameModel::AddPlayer(float startingPosition[3], float rotation) {
  *
  * \param startingPosition The initial x,y,z position of the asteroid in the world space.
  */
-void GameModel::AddAsteroid(float startingPosition[3]) {
+void GameModel::addAsteroid(float startingPosition[2]) {
 	std::shared_ptr<AsteroidModel> asteroidModel = std::make_shared<AsteroidModel>(startingPosition);
 	this->actors.insert({asteroidModel->id, asteroidModel});
 	this->asteroids.push_back(asteroidModel);
@@ -116,7 +116,7 @@ void GameModel::AddAsteroid(float startingPosition[3]) {
  *
  * \param startingPosition The initial x,y,z position of the asteroid in the world space.
  */
-void GameModel::addMediumAsteroid(float startingPosition[3]) {
+void GameModel::addMediumAsteroid(float startingPosition[2]) {
 	std::shared_ptr<MediumAsteroidModel> asteroidModel = std::make_shared<MediumAsteroidModel>(startingPosition);
 	this->actors.insert({ asteroidModel->id, asteroidModel });
 	this->mediumAsteroids.push_back(asteroidModel);
@@ -129,7 +129,7 @@ void GameModel::addMediumAsteroid(float startingPosition[3]) {
  *
  * \param startingPosition The initial x,y,z position of the asteroid in the world space.
  */
-void GameModel::addSmallAsteroid(float startingPosition[3]) {
+void GameModel::addSmallAsteroid(float startingPosition[2]) {
 	std::shared_ptr<SmallAsteroidModel> asteroidModel = std::make_shared<SmallAsteroidModel>(startingPosition);
 	this->actors.insert({ asteroidModel->id, asteroidModel });
 	this->smallAsteroids.push_back(asteroidModel);
@@ -145,7 +145,7 @@ void GameModel::addSmallAsteroid(float startingPosition[3]) {
  * \param sourcePosition The position of the game object the particles stem from.
  * \param sourceType The type of game object that created the particles.
  */
-void GameModel::spawnDeathParticles(float sourcePosition[3], ActorType sourceType) {
+void GameModel::spawnDeathParticles(float sourcePosition[2], ActorType sourceType) {
 	for (int i = 0; i < 8; i++) {
 		std::shared_ptr<ParticleModel> particleModel = std::make_shared<ParticleModel>(this->currentTickTime, sourcePosition, sourceType);
 		this->actors.insert({ particleModel->id, particleModel });
@@ -182,7 +182,7 @@ void GameModel::setPlayerAccelerating(bool isAccelerating) {
 }
 
 /**
- * Fires a ship's projectile if it is off available.
+ * Fires a ship's projectile if it is available.
  * 
  * Checks whether the cooldown after the last projectile has passed and whether 
  * the ship has reached the maximum amount of projectile it can fire at the moment.
@@ -257,7 +257,7 @@ void GameModel::removeActor(unsigned int id) {
 			auto it = std::find_if(this->asteroids.begin(), this->asteroids.end(), [id](std::shared_ptr<AsteroidModel> object) { return object->id == id; });
 
 			if (it != this->asteroids.end()) {
-				float startingPosition[3]{ it->get()->position[0], it->get()->position[1], it->get()->position[2] };
+				float startingPosition[2]{ it->get()->position[0], it->get()->position[1] };
 				this->spawnDeathParticles(startingPosition, it->get()->actorType);
 
 				this->asteroids.erase(it);
@@ -269,7 +269,7 @@ void GameModel::removeActor(unsigned int id) {
 			auto it = std::find_if(this->mediumAsteroids.begin(), this->mediumAsteroids.end(), [id](std::shared_ptr<MediumAsteroidModel> object) { return object->id == id; });
 
 			if (it != this->mediumAsteroids.end()) {
-				float startingPosition[3]{ it->get()->position[0], it->get()->position[1], it->get()->position[2] };
+				float startingPosition[2]{ it->get()->position[0], it->get()->position[1] };
 				this->spawnDeathParticles(startingPosition, it->get()->actorType);
 
 				this->mediumAsteroids.erase(it);
@@ -332,14 +332,14 @@ void GameModel::removeActor(unsigned int id) {
 /**
  * Rotates the player's ship to the left.
  */
-void GameModel::RotatePlayerLeft() {
+void GameModel::playerRotateLeft() {
 	this->physicsEngine.rotatePlayerLeft();
 }
 
 /**
  * Rotates the player's ship to the right.
  */
-void GameModel::RotatePlayerRight() {
+void GameModel::playerRotateRight() {
 	this->physicsEngine.rotatePlayerRight();
 }
 
@@ -354,8 +354,8 @@ void GameModel::checkPlayerDeath() {
 	duration<double> timeSpan = duration_cast<duration<double>>(this->currentTickTime - this->lastPlayerDeath);
 
 	if (timeSpan.count() > 3.0) {
-		float startingPosition[3] = { this->windowX/2.0f, this->windowY/2.0f, 0.0f };
-		this->AddPlayer(startingPosition, 0.0f);
+		float startingPosition[2] = { this->windowX/2.0f, this->windowY/2.0f };
+		this->addPlayer(startingPosition, 0.0f);
 	}
 }
 
@@ -374,8 +374,8 @@ void GameModel::checkPlayerHyperSpace() {
 		float boundaryX = this->windowX * 0.9f;
 		float boundaryY = this->windowY * 0.9f;
 
-		float startingPosition[3] = { getRandomFloat(this->windowX - boundaryX, boundaryX), getRandomFloat(this->windowY - boundaryY, boundaryY), 0.0f};
-		this->AddPlayer(startingPosition, getRandomFloat(0.0f, 2 * MY_PI));
+		float startingPosition[2] = { getRandomFloat(this->windowX - boundaryX, boundaryX), getRandomFloat(this->windowY - boundaryY, boundaryY)};
+		this->addPlayer(startingPosition, getRandomFloat(0.0f, 2 * MY_PI));
 		this->playerIsInHyperSpace = false;
 	}
 }
@@ -558,7 +558,7 @@ void GameModel::addShip(bool isLarge) {
 		direction = MY_PI;
 	}
 
-	float startingPosition[3] = { x, y, 0.0f };
+	float startingPosition[2] = { x, y };
 
 	std::shared_ptr<BaseShipModel> shipModel;
 
@@ -645,6 +645,6 @@ void GameModel::checkShipLifetime() {
 /**
  * Empty the list of sound events after having processed them.
  */
-void GameModel::clearSoundChanges() {
+void GameModel::clearSoundEvents() {
 	this->soundEvents.clear();
 }

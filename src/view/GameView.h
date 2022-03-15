@@ -8,6 +8,7 @@
 
 #include "Text.h"
 #include "ActorView.h"
+#include "IDGen.h"
 
 #include "../model/GameModel.h"
 
@@ -28,26 +29,32 @@ class GameView {
 	std::map<unsigned int, ActorView> actors; /**< A map of all actors that are drawn in the game. */
 	std::map<unsigned int, Text> texts; /**< A map of all texts displayed in the game at the moment. */
 	std::vector<ActorView> playerLivesUIObjects; /**< A list of UI objects that show the player's current lives. */
-	unsigned int scoreTextId; /**< The id for the text UI that shows the current score. */
+
+	steady_clock::time_point currentFrameTime;
+
+	unsigned int boosterId;
+
+	void updateFrameTime();
 public:
 	GameView(std::shared_ptr<GameModel> model);
 	~GameView();
 	
 	void setup();
 
-	bool ShouldWindowClose() const;
-	void SwapBuffers() const;
-	void Clear() const;
-	void Render();
-	void Update();
+	bool shouldWindowClose() const;
+	void swapFrameBuffers() const;
+	void clearFrameBuffer() const;
+	void render();
+	void update();
 	void updateResolution();
 	void checkWindowResize();
-
-	void AddActor(unsigned int id, ActorType actorType);
-	void addPlayerLife(unsigned int id);
-	void AddText(unsigned int id, std::string text, float x, float y);
+	
+	void addBooster();
+	void addActor(unsigned int id, ActorType actorType);
+	void addPlayerLifeUI(unsigned int id);
+	void addText(unsigned int id, std::string text, float x, float y);
 	void removeText(unsigned int id);
 
 	HWND getHwnd();
-	std::vector<std::string> GetInput();
+	std::vector<std::string> getInput();
 };

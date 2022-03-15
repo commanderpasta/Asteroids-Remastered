@@ -9,7 +9,7 @@ float SmallShipModel::radius = 6.0f;
  * \param timeOfSpawn The time point of the current tick the ship is being created in.
  * \param startOnLeft A bool that says whether the ship starts on the left and will move LTR or vice versa.
  */
-SmallShipModel::SmallShipModel(float startingPosition[3], steady_clock::time_point timeOfSpawn, bool startOnLeft) //, float inaccuracyInRad
+SmallShipModel::SmallShipModel(float startingPosition[2], steady_clock::time_point timeOfSpawn, bool startOnLeft) //, float inaccuracyInRad
 	: BaseShipModel(startingPosition, timeOfSpawn, startOnLeft, ActorType::ShipSmall), shootingInaccuracy(0.0f) {
 }
 
@@ -29,7 +29,7 @@ SmallShipModel::~SmallShipModel() {
  * \param playerPosition The position of the player.
  * \return The direction to fire towards as a radian value.
  */
-float SmallShipModel::calcProjectileDirection(float playerPosition[3]) {
+float SmallShipModel::calcProjectileDirection(float playerPosition[2]) {
 	float preciseDirection = -atan2(playerPosition[1] - this->position[1], playerPosition[0] - this->position[0]) + MY_PI / 2;
 
 	bool missLeftOrRight = randomBool();

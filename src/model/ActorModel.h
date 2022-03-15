@@ -1,8 +1,9 @@
 #pragma once
 
-#include "ActorTypes.h"
-
 #include <string>
+
+#include "ActorTypes.h"
+#include "IDGen.h"
 
 /**
  * Base class for every in-game actor. 
@@ -12,11 +13,11 @@
 class ActorModel {
 public:
 	unsigned int id; /**< The unique id of this game object. */
-	float position[3]; /**< The actor's three-dimensional position in world space. */
+	float position[2]; /**< The actor's three-dimensional position in world space. */
 	float rotation; /**< The orientation of the actor. */
 	ActorType actorType; /**< The type of object it represents. */
 
-	ActorModel(float startingPosition[3], float rotation, ActorType actorType);
+	ActorModel(float startingPosition[2], float rotation, ActorType actorType);
 	~ActorModel();
 
 	virtual unsigned int getPointsValue();

@@ -22,7 +22,7 @@ ActorType getProjectileTypeFromSource(ActorType& sourceType) {
  * \param sourcePosition The position of the particle's source.
  * \param sourceType The <ActorType> of the particle's source.
  */
-ParticleModel::ParticleModel(steady_clock::time_point timeOfSpawn, float sourcePosition[3], ActorType sourceType) : timeOfSpawn(timeOfSpawn), ActorModel(sourcePosition, 0.0f, getProjectileTypeFromSource(sourceType)) {
+ParticleModel::ParticleModel(steady_clock::time_point timeOfSpawn, float sourcePosition[2], ActorType sourceType) : timeOfSpawn(timeOfSpawn), ActorModel(sourcePosition, 0.0f, getProjectileTypeFromSource(sourceType)) {
 }
 
 ParticleModel::~ParticleModel() {}

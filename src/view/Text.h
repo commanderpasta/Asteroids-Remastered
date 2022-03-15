@@ -38,7 +38,7 @@ public:
 		}
 	}
 
-	void SetPosition(float position[3], float angle);
+	void setPosition(float position[2], float angle);
 	void setResolution(float x, float y);
 };
 

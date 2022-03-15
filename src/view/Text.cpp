@@ -63,21 +63,17 @@ Character::~Character() {
 /**
  * Changes the position of the <Character>.
  * 
- * \param position Th
- * \param angle
+ * \param position The character's new x,y coordinates in the game space.
+ * \param angle The orientation of the character.
  */
-void Character::SetPosition(float position[3], float angle) {
+void Character::setPosition(float position[2], float angle) {
     this->shader.Bind();
     float translationMatrix[4][4] = {
-        {1.0f, 0.0f, 0.0f, 0.0f},
-        {0.0f, 1.0f, 0.0f, 0.0f},
+        {1.0f, 0.0f, 0.0f, position[0]},
+        {0.0f, 1.0f, 0.0f, position[1]},
         {0.0f, 0.0f, 1.0f, 0.0f},
         {0.0f, 0.0f, 0.0f, 1.0f}
     };
-    // apply translation to view matrix
-    for (int i = 0; i < 3; i++) {
-        translationMatrix[i][3] += position[i];
-    }
 
     float rotationMatrix[4][4] = {
     {cosf(angle), sinf(angle), 0.0f, 0.0f},
@@ -124,8 +120,8 @@ Text::Text(unsigned int id, std::string text, float x, float y, float windowX, f
         charRenderData.shader.Bind();
         charRenderData.shader.SetUniform2f("u_texCoordShift", column * 0.125f, - (row * 0.125f));
 
-        float position[3] = { x + counter * 30, y, 0 };
-        charRenderData.SetPosition(position, 0.0f);
+        float position[2] = { x + counter * 30, y };
+        charRenderData.setPosition(position, 0.0f);
         this->characters.push_back(std::move(charRenderData));
 
 		counter++;

@@ -9,7 +9,7 @@
  * 
  * \param model The MVC model used for this game instance.
  */
-GameView::GameView(std::shared_ptr<GameModel> model) : model(model), window(nullptr) {
+GameView::GameView(std::shared_ptr<GameModel> model) : model(model), window(nullptr), boosterId(UINT_MAX) {
     glfwInit(); // Attempt to intialize the library
 
     this->window = glfwCreateWindow(this->model->windowX, this->model->windowY, "Asteroids: Remastered", NULL, NULL); //glfwGetPrimaryMonitor()
@@ -17,7 +17,6 @@ GameView::GameView(std::shared_ptr<GameModel> model) : model(model), window(null
     if (!this->window)
     {
         glfwTerminate();
-        //return -1;
     }
 
     glfwMakeContextCurrent(this->window); // Make the window's context current
@@ -26,7 +25,6 @@ GameView::GameView(std::shared_ptr<GameModel> model) : model(model), window(null
 
     if (glewInit() != GLEW_OK) {
         std::cout << "Error!" << std::endl;
-        //return -1;
     }
 
     // Enable texture blending in OpenGL
@@ -52,7 +50,7 @@ void GameView::setup() {
         this->actorDataPerType.insert({type, std::move(renderData) });
     }
 
-    this->AddActor(10000, ActorType::Booster);
+    this->addBooster();
 }
 
 GameView::~GameView() {
@@ -68,6 +66,10 @@ GameView::~GameView() {
  */
 HWND GameView::getHwnd() {
     return glfwGetWin32Window(this->window);
+}
+
+void GameView::updateFrameTime() {
+    this->currentFrameTime = steady_clock::now();
 }
 
 /**
@@ -101,14 +103,14 @@ void GameView::checkWindowResize() {
  * 
  * \return A boolean stating whether it should be closed.
  */
-bool GameView::ShouldWindowClose() const {
+bool GameView::shouldWindowClose() const {
     return glfwWindowShouldClose(this->window);
 }
 
 /**
  * Directs the GPU to swap the currently displayed frame with the newly drawn frame.
  */
-void GameView::SwapBuffers() const {
+void GameView::swapFrameBuffers() const {
     glfwSwapBuffers(this->window);
 }
 
@@ -117,7 +119,7 @@ void GameView::SwapBuffers() const {
  * 
  * \return A list with the names of the pressed (mapped) keys.
  */
-std::vector<std::string> GameView::GetInput() {
+std::vector<std::string> GameView::getInput() {
     glfwPollEvents();
 
     std::vector<std::string> keyboardEvents;
@@ -149,7 +151,7 @@ std::vector<std::string> GameView::GetInput() {
  * \param x The x coordinate of the lower left corner of the text.
  * \param y The y coordinate of the lower left corner of the text.
  */
-void GameView::AddText(unsigned int id, std::string text, float x, float y) {
+void GameView::addText(unsigned int id, std::string text, float x, float y) {
     Text newText(id, text, x, y, this->model->windowX, this->model->windowY);
     this->texts.insert({id, std::move(newText)});
 }
@@ -163,18 +165,31 @@ void GameView::removeText(unsigned int id) {
     this->texts.erase(id);
 }
 
+void GameView::addBooster() {
+    ActorTypeData boosterRenderData = getActorDataFromType(ActorType::Booster);
+    auto renderCache = this->actorDataPerType.find(ActorType::Booster);
+
+    ActorView booster(renderCache->second, boosterRenderData.shaderPath, 0, this->model->windowX, this->model->windowY);
+
+    booster.setFlickerFrequency(0.1f);
+
+    this->boosterId = booster.id;
+    this->actors.insert({ booster.id, std::move(booster) });
+}
+
 /**
  * Adds a new game object to be displayed.
  * 
  * \param id The id of the new game object
  * \param actorType The type of the game object
  */
-void GameView::AddActor(unsigned int id, ActorType actorType) {
+void GameView::addActor(unsigned int id, ActorType actorType) {
     ActorTypeData typeData = getActorDataFromType(actorType);
 
     // Check <actorDataPerType> whether the buffers for this actor type are cached
     if (this->actorDataPerType.count(actorType) >= 1) {
         auto range = this->actorDataPerType.equal_range(actorType);
+
         for (auto& it = range.first; it != range.second; ++it) {
             if (it->second->texture.getFilePath() == typeData.texturePath) { //To support random textures
                 ActorView newActor(it->second, typeData.shaderPath, id, this->model->windowX, this->model->windowY);
@@ -201,7 +216,7 @@ void GameView::AddActor(unsigned int id, ActorType actorType) {
  * 
  * \param id The id for the new UI element
  */
-void GameView::addPlayerLife(unsigned int id) {
+void GameView::addPlayerLifeUI(unsigned int id) {
     ActorTypeData typeData = getActorDataFromType(ActorType::Player);
 
     if (this->actorDataPerType.count(ActorType::Player) >= 1) {
@@ -225,36 +240,31 @@ void GameView::addPlayerLife(unsigned int id) {
 /**
  * Draws all objects to the new frame.
  */
-void GameView::Render() {
+void GameView::render() {
     // Booster
-    unsigned int count = 0;
-    if (this->actors.count(10000) != 0) {
-        auto booster = this->actors.find(10000);
+    // Special case as it's the only object that uses the isHidden property
+    /*if (this->booster) {
 
-        if (!booster->second.isHidden) {
-            booster->second.data->texture.Bind();
-            booster->second.shader.Bind();
-            booster->second.data->va.Bind();
-            booster->second.data->ib.Bind();
+        if (!booster->isHidden) {
+            booster->data->texture.Bind();
+            booster->shader.Bind();
+            booster->data->va.Bind();
+            booster->data->ib.Bind();
 
-            GLCall(glDrawElements(GL_TRIANGLES, booster->second.data->ib.GetCount(), GL_UNSIGNED_INT, nullptr));
-            count++;
+            GLCall(glDrawElements(GL_TRIANGLES, booster->data->ib.GetCount(), GL_UNSIGNED_INT, nullptr));
         }
-    }
+    }*/
 
     // Game objects
     for (auto& actor : this->actors) {
-        if (actor.second.id == 10000) {
-            continue;
+        if (actor.second.isVisible) {
+            actor.second.data->texture.Bind();
+            actor.second.shader.Bind();
+            actor.second.data->va.Bind();
+            actor.second.data->ib.Bind();
+
+            GLCall(glDrawElements(GL_TRIANGLES, actor.second.data->ib.GetCount(), GL_UNSIGNED_INT, nullptr));
         }
-
-        actor.second.data->texture.Bind();
-        actor.second.shader.Bind();
-        actor.second.data->va.Bind();
-        actor.second.data->ib.Bind();
-
-        GLCall(glDrawElements(GL_TRIANGLES, actor.second.data->ib.GetCount(), GL_UNSIGNED_INT, nullptr));
-        count++;
     }
 
     // UI - Player lives
@@ -295,13 +305,15 @@ void GameView::Render() {
 /**
  * Updates the view manager to mirror the model component.
  */
-void GameView::Update() {
+void GameView::update() {
+    this->updateFrameTime(); 
+
     // delete actors in view
     for (auto actor = this->actors.cbegin(), next_actor = actor; actor != this->actors.cend(); actor = next_actor)
     {
         ++next_actor;
         if (model->actors.count(actor->first) != 1) {
-            if (actor->first != 10000) {
+            if (actor->first != this->boosterId) {
                 this->actors.erase(actor);
             }
         }
@@ -310,11 +322,11 @@ void GameView::Update() {
     // add new actors in view
     for (auto& currentActorModel : model->actors) {
         if (this->actors.count(currentActorModel.first) != 1) {
-            this->AddActor(currentActorModel.second->id, currentActorModel.second->actorType);
+            this->addActor(currentActorModel.second->id, currentActorModel.second->actorType);
         }
 
         // update actor position in view
-        this->actors.find(currentActorModel.first)->second.SetPosition(currentActorModel.second->position, currentActorModel.second->rotation);
+        this->actors.find(currentActorModel.first)->second.setPosition(currentActorModel.second->position, currentActorModel.second->rotation);
     }
 
     //score
@@ -324,17 +336,17 @@ void GameView::Update() {
         this->removeText(0);
     }
 
-    this->AddText(0, std::to_string(this->model->score), this->model->windowX * 0.1f, this->model->windowY * 0.9f);
+    this->addText(0, std::to_string(this->model->score), this->model->windowX * 0.1f, this->model->windowY * 0.9f);
 
     //lives
     int playerLivesDisplayedDifference = this->playerLivesUIObjects.size() - this->model->playerLives;
 
     if (playerLivesDisplayedDifference < 0) {
         for (int i = 0; i > playerLivesDisplayedDifference; i--) {
-            this->addPlayerLife(9000 + this->playerLivesUIObjects.size());
+            this->addPlayerLifeUI(9000 + this->playerLivesUIObjects.size());
 
-            float uiDisplayPosition[3] = { this->model->windowX * 0.1f + 16.0f * this->playerLivesUIObjects.size(), this->model->windowY * 0.9f - 50.0f, 0.0f};
-            this->playerLivesUIObjects.back().SetPosition(uiDisplayPosition, 0.0f);
+            float uiDisplayPosition[2] = { this->model->windowX * 0.1f + 16.0f * this->playerLivesUIObjects.size(), this->model->windowY * 0.9f - 50.0f};
+            this->playerLivesUIObjects.back().setPosition(uiDisplayPosition, 0.0f);
         }
     } else if (playerLivesDisplayedDifference > 0) {
         for (int i = 0; i < playerLivesDisplayedDifference; i++) {
@@ -342,22 +354,43 @@ void GameView::Update() {
         }
     }
 
-    //show player booster
-    unsigned int boosterId = 10000;
-    if (this->actors.count(boosterId) != 0) {
-        if (this->model->player) {
-            this->actors.find(boosterId)->second.setHidden(!this->model->player->isBoosterActive);
+    //flickering for player booster
+    if (this->model->player) {
+        auto player = this->actors.find(this->model->player->id);
 
-            if (!this->actors.find(boosterId)->second.isHidden) {
-                float boosterPosition[3] = { this->model->player->position[0], this->model->player->position[1], this->model->player->position[2] };
-                this->actors.find(boosterId)->second.SetPosition(boosterPosition, this->model->player->rotation + MY_PI);
+        if (player != this->actors.end()) {
+            // Flickering for player invincibility
+            duration<double> timeSpan = duration_cast<duration<double>>(this->currentFrameTime - this->model->lastPlayerDeath);
+
+            if (timeSpan.count() < 5.0) {
+                player->second.setFlickerFrequency(0.25f);
+                player->second.updateFlickering(this->currentFrameTime);
+            }
+            else {
+                player->second.setFlickerFrequency(0.0f);
+                player->second.isVisible = true;
+            }
+
+            // Booster flickering
+            auto booster = this->actors.find(this->boosterId);
+            if (booster != this->actors.end()) {
+                if (this->model->player->isAccelerating && player->second.isVisible) {
+                    booster->second.updateFlickering(this->currentFrameTime);
+
+                    float boosterPosition[2] = { this->model->player->position[0], this->model->player->position[1] };
+                    booster->second.setPosition(boosterPosition, this->model->player->rotation + MY_PI);
+                }
+                else {
+                    booster->second.isVisible = false;
+                }
             }
         }
-        else {
-            this->actors.find(boosterId)->second.setHidden(true);
+    } else {
+        auto booster = this->actors.find(this->boosterId);
+        if (booster != this->actors.end()) {
+            booster->second.isVisible = false;
         }
     }
-
 }
 
 /**
@@ -365,6 +398,6 @@ void GameView::Update() {
  * 
  * Is used remove contents of the last frame after it is displayed to the screen.
  */
-void GameView::Clear() const {
+void GameView::clearFrameBuffer() const {
     GLCall(glClear(GL_COLOR_BUFFER_BIT));
 }

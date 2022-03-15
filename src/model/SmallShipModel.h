@@ -18,10 +18,10 @@ private:
 public:
 	static float radius;
 
-	SmallShipModel(float startingPosition[3], steady_clock::time_point timeOfSpawn, bool isDirectionLeft);
+	SmallShipModel(float startingPosition[2], steady_clock::time_point timeOfSpawn, bool isDirectionLeft);
 	~SmallShipModel();
 
-	float calcProjectileDirection(float playerPosition[3]);
+	float calcProjectileDirection(float playerPosition[2]);
 	void setInaccuracy(float newInaccuracy);
 	unsigned int getPointsValue();
 };

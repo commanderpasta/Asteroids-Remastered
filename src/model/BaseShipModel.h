@@ -26,9 +26,9 @@ public:
 	steady_clock::time_point lastChangeOfDirection; /**< Describes the last time its direction has changed. */
 	MovingState changeDirection();
 
-	BaseShipModel(float startingPosition[3], steady_clock::time_point timeOfSpawn, bool startOnLeft, ActorType shipType);
+	BaseShipModel(float startingPosition[2], steady_clock::time_point timeOfSpawn, bool startOnLeft, ActorType shipType);
 	~BaseShipModel();
 
 	bool hasReachedOtherSide(int windowX);
-	virtual float calcProjectileDirection(float playerPosition[3]) = 0;
+	virtual float calcProjectileDirection(float playerPosition[2]) = 0;
 };

@@ -1,6 +1,6 @@
 #pragma once
 
-#include <model/Maths.h>
+#include <Maths.h>
 
 #include <memory>
 #include <vector>

@@ -1,5 +1,10 @@
 #include "GameController.h"
 
+/**
+ * Initializes the MVC controller that manages the main game loop.
+ * 
+ * \param model
+ */
 GameController::GameController(std::shared_ptr<GameModel> model)
     : view(model) {
 
@@ -8,16 +13,24 @@ GameController::GameController(std::shared_ptr<GameModel> model)
 
 GameController::~GameController() {}
 
+/**
+ * Intializes DirectSound for the game's window.
+ * 
+ * DirectSound needs a HWND window context, which we can get from view.
+ */
 void GameController::setupSound() {
     HWND hwnd = this->view.getHwnd();
     this->soundApi.initialize(hwnd);
 
-    //load every sound that will be used
-    for (std::string& fileName : this->model->soundFileNames) {
+    //Pre-load every sound that will be used
+    for (std::string& fileName : this->model->soundFileList) {
         this->soundApi.loadSound(fileName, "res/sounds/" + fileName + ".wav");
     }
 }
 
+/**
+ * Forwards all sound-related events from model to DirectSound.
+ */
 void GameController::updateSound() {
     for (auto& change : this->model->soundEvents) {
         auto it = std::find_if(this->soundApi.sounds.begin(), this->soundApi.sounds.end(), [change](DirectSound::Sound& s) {return s.name == change.soundName;} );
@@ -41,16 +54,22 @@ void GameController::updateSound() {
         }
     }
 
-    this->model->clearSoundChanges();
+    this->model->clearSoundEvents(); // Empty the list of sound events since they were handled
 }
 
+/**
+ * Executes the main game loop.
+ * 
+ * Handles game ticks for update frequency of model, sound and view. It uses a fixed tick rate for model, and a non-fixed refresh rate for view,
+ * meaning a constant game speed over variable rendered frames per second (unless the computer is much, much slower than the tick rate).
+ */
 void GameController::update() {
-    this->model->Setup();
+    this->model->setup();
     this->view.setup();
     this->setupSound();
 
     const int TICKS_PER_SECOND = 144;
-    const int SKIP_TICKS = 1000 / TICKS_PER_SECOND;
+    const int SKIP_TICKS_IN_MS = 1000 / TICKS_PER_SECOND;
     const int MAX_FRAMESKIP = 10;
 
     auto nextGameTick = this->model->currentTickTime;
@@ -58,16 +77,13 @@ void GameController::update() {
 
     bool isGameOver = false;
 
-    while (!view.ShouldWindowClose())
+    while (!view.shouldWindowClose())
     {
-        // Render here
-        this->view.Clear();
-
         if (isGameOver) {
             break; //TODO: END SCREEN
         }
 
-        // update model at a fixed rate (TICKS_PER_SECOND), independently from view 
+        // update model at a fixed tick rate (TICKS_PER_SECOND), independently from view 
         // reference https://web.archive.org/web/20160328091806/http://www.koonsolo.com/news/dewitters-gameloop/
         int loops = 0;
         while (steady_clock::now() > nextGameTick && loops < MAX_FRAMESKIP) {
@@ -88,7 +104,7 @@ void GameController::update() {
             this->model->checkPlayerHyperSpace();
             this->model->shipFireProjectile();
 
-            std::vector<std::string> keyboardInput = this->view.GetInput();
+            std::vector<std::string> keyboardInput = this->view.getInput();
             if (std::find(keyboardInput.begin(), keyboardInput.end(), "FORWARD") != keyboardInput.end()) {
                 this->model->setPlayerAccelerating(true);
             }
@@ -105,11 +121,11 @@ void GameController::update() {
             }
 
             if (std::find(keyboardInput.begin(), keyboardInput.end(), "RIGHT") != keyboardInput.end()) {
-                this->model->RotatePlayerRight();
+                this->model->playerRotateRight();
             }
 
             else if (std::find(keyboardInput.begin(), keyboardInput.end(), "LEFT") != keyboardInput.end()) {
-                this->model->RotatePlayerLeft();
+                this->model->playerRotateLeft();
             }
 
             //this->view.checkWindowResize();
@@ -119,16 +135,19 @@ void GameController::update() {
 
             this->updateSound();
 
-            nextGameTick += milliseconds(SKIP_TICKS);
+            nextGameTick += milliseconds(SKIP_TICKS_IN_MS);
             loops++;
         }
 
-        this->view.Update();
-        this->view.Render();
+        this->view.update();
+
+        // Render here
+        this->view.clearFrameBuffer();
+        this->view.render();
 
         // Swap front and back buffers
-        this->view.SwapBuffers();
+        this->view.swapFrameBuffers();
     }
 
-    //TODO: Shutdown directsound
+    this->soundApi.shutdown();
 }

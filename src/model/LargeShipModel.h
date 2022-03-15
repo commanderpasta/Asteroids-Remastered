@@ -16,9 +16,9 @@ class LargeShipModel : public BaseShipModel {
 public:
 	static float radius;
 
-	LargeShipModel(float startingPosition[3], steady_clock::time_point timeOfSpawn, bool isDirectionLeft);
+	LargeShipModel(float startingPosition[2], steady_clock::time_point timeOfSpawn, bool isDirectionLeft);
 	~LargeShipModel();
 
-	float calcProjectileDirection(float playerPosition[3]);
+	float calcProjectileDirection(float playerPosition[2]);
 	unsigned int getPointsValue();
 };

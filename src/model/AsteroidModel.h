@@ -9,6 +9,6 @@ public:
 	static float radius; /**< The object's size. */
 	unsigned int getPointsValue();
 	
-	AsteroidModel(float startingPosition[3]);
+	AsteroidModel(float startingPosition[2]);
 	~AsteroidModel();
 };
