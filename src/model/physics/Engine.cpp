@@ -62,28 +62,6 @@ void PhysicsEngine::addActor(unsigned int id, float x, float y, float direction,
 	}
 }
 
-//TODO: Remove
-/**
- * Adds a physical representation of the player to be managed in the PhysicsEngine.
- * 
- * @see PhysicsEngine::addActor()
- * 
- * \param id
- * \param x
- * \param y
- * \param direction
- * \param acceleration
- * \param deacceleration
- * \param startingSpeed
- * \param maxSpeed
- * \param hitboxRadius
- */
-void PhysicsEngine::addPlayer(unsigned int id, float x, float y, float direction, float acceleration, float deacceleration, float startingSpeed, float maxSpeed, float hitboxRadius) {
-	this->player = std::make_shared<PhysicsObject>(id, x, y, direction, acceleration, deacceleration, startingSpeed, maxSpeed, hitboxRadius, AccelerationType::Linear);
-	this->actorPhysicsObjects.emplace_back(this->player);
-	this->actorsWithHitboxRegistration.emplace_back(this->player);
-}
-
 /**
  * Removes the <PhysicsObject> of a game object.
  * 
@@ -218,27 +196,35 @@ void PhysicsEngine::setAcceleration(unsigned int id, float acceleration) {
 }
 
 /**
- * Rotates the player by DELTA to the left in the next tick.
+ * Rotates an object by DELTA to the left in the next tick.
  */
-void PhysicsEngine::rotatePlayerLeft() {
-	this->player->direction -= DELTA;
-	if (this->player->direction <= 0.0f) {
-		this->player->direction = 2.0f * MY_PI;
-	}
+void PhysicsEngine::rotateObjectLeft(unsigned int id) {
+	auto it = std::find_if(this->actorPhysicsObjects.begin(), this->actorPhysicsObjects.end(), [id](std::shared_ptr<PhysicsObject> object) { return object->id == id; });
 
-	this->player->rotation = this->player->direction;
+	if (it != this->actorPhysicsObjects.end()) {
+		it->get()->direction -= DELTA;
+		if (it->get()->direction <= 0.0f) {
+			it->get()->direction = 2.0f * MY_PI;
+		}
+
+		it->get()->rotation = it->get()->direction;
+	}
 }
 
 /**
- * Rotates the player by DELTA to the right in the next tick.
+ * Rotates an object by DELTA to the right in the next tick.
  */
-void PhysicsEngine::rotatePlayerRight() {
-	this->player->direction += DELTA;
-	if (this->player->direction >= (2 * MY_PI)) {
-		this->player->direction = 0.0f;
-	}
+void PhysicsEngine::rotateObjectRight(unsigned int id) {
+	auto it = std::find_if(this->actorPhysicsObjects.begin(), this->actorPhysicsObjects.end(), [id](std::shared_ptr<PhysicsObject> object) { return object->id == id; });
 
-	this->player->rotation = this->player->direction;
+	if (it != this->actorPhysicsObjects.end()) {
+		it->get()->direction += DELTA;
+		if (it->get()->direction >= (2 * MY_PI)) {
+			it->get()->direction = 0.0f;
+		}
+
+		it->get()->rotation = it->get()->direction;
+	}
 }
 
 /**
@@ -250,10 +236,6 @@ std::vector<std::pair<unsigned int, unsigned int>> PhysicsEngine::checkCollision
 	std::vector<std::pair<unsigned int, unsigned int>> test;
 
 	for (auto& actor : this->actorPhysicsObjects) {
-		if (actor->id == this->player->id) {
-			continue;
-		}
-
 		for (auto& actorWithHitboxRegistration : this->actorsWithHitboxRegistration) {
 			if (actor->id != actorWithHitboxRegistration->id) {
 				auto dx = actorWithHitboxRegistration->x - actor->x;

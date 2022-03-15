@@ -53,7 +53,6 @@ class PhysicsEngine {
 	};
 
 private:
-	std::shared_ptr<PhysicsObject> player; /**< A reference to the player's <PhysicsObject>. */
 	std::vector<std::shared_ptr<PhysicsObject>> actorPhysicsObjects; /**< Contains every <PhysicsObject> to itervate over. */
 	std::vector<std::shared_ptr<PhysicsObject>> actorsWithHitboxRegistration; /**< Contains every <PhysicsObject> that announces collision detections every tick. */
 
@@ -63,7 +62,6 @@ public:
 	PhysicsEngine(unsigned int boundaryX, unsigned int boundaryY);
 	~PhysicsEngine();
 	void addActor(unsigned int id, float x, float y, float direction, float acceleration, float deacceleration, float startingSpeed, float maxSpeed, float hitboxRadius, bool hasHitboxRegistration, AccelerationType accelerationType);
-	void addPlayer(unsigned int id, float x, float y, float direction, float acceleration, float deacceleration, float startingSpeed, float maxSpeed, float hitboxRadius);
 	void removeActor(unsigned int id);
 
 	void setDirection(unsigned int id, float directionInRad);
@@ -71,8 +69,8 @@ public:
 	void setBoundByWindow(unsigned int id, bool x, bool y);
 
 
-	void rotatePlayerLeft();
-	void rotatePlayerRight();
+	void rotateObjectLeft(unsigned int id);
+	void rotateObjectRight(unsigned int id);
 
 	std::vector <std::tuple<unsigned int, float, float, float>> updatePositions();
 	std::vector<std::pair<unsigned int, unsigned int>> checkCollisions();

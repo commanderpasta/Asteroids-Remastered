@@ -95,7 +95,7 @@ void GameModel::addPlayer(float startingPosition[2], float rotation) {
 	this->actors.insert({playerModel->id, playerModel});
 	this->player = playerModel;
 
-	this->physicsEngine.addPlayer(playerModel->id, playerModel->position[0], playerModel->position[1], 0.0f, 0.0f, 0.005f, 0.0f, 4.0f, playerModel->radius);
+	this->physicsEngine.addActor(playerModel->id, playerModel->position[0], playerModel->position[1], 0.0f, 0.0f, 0.005f, 0.0f, 4.0f, playerModel->radius, true, AccelerationType::Linear);
 }
 
 /**
@@ -333,14 +333,18 @@ void GameModel::removeActor(unsigned int id) {
  * Rotates the player's ship to the left.
  */
 void GameModel::playerRotateLeft() {
-	this->physicsEngine.rotatePlayerLeft();
+	if (this->player) {
+		this->physicsEngine.rotateObjectLeft(this->player->id);
+	}
 }
 
 /**
  * Rotates the player's ship to the right.
  */
 void GameModel::playerRotateRight() {
-	this->physicsEngine.rotatePlayerRight();
+	if (this->player) {
+		this->physicsEngine.rotateObjectRight(this->player->id);
+	}
 }
 
 /**
