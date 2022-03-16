@@ -12,6 +12,8 @@
 GameView::GameView(std::shared_ptr<GameModel> model) : model(model), window(nullptr), boosterId(UINT_MAX), gameOverId(UINT_MAX) {
     glfwInit(); // Attempt to intialize the library
 
+    glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE); // Disable user window resizing
+
     this->window = glfwCreateWindow(this->model->windowX, this->model->windowY, "Asteroids: Remastered", NULL, NULL); //glfwGetPrimaryMonitor()
 
     if (!this->window)
