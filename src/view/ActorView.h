@@ -27,7 +27,7 @@ public:
 	~ActorView();
 
 	ActorView(ActorView&& other) noexcept
-		: shader(std::move(other.shader)), data(std::move(other.data)), id(std::move(other.id)), flickerFrequency(std::move(other.flickerFrequency)) {
+		: shader(std::move(other.shader)), data(std::move(other.data)), id(std::move(other.id)), flickerFrequency(std::move(other.flickerFrequency)), isVisible(std::move(other.isVisible)) {
 		other.shader.m_RendererID = 0;
 	}
 

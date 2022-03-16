@@ -10,7 +10,7 @@
  * \param windowY The game window's height.
  */
 ActorView::ActorView(std::shared_ptr<ActorDataView> data, std::string shaderPath, unsigned int id, float windowX, float windowY)
-    : data(data), shader(shaderPath), id(id), flickerFrequency(0), isVisible(false) {
+    : data(data), shader(shaderPath), id(id), flickerFrequency(0), isVisible(true) {
 
     this->shader.Bind();
 
