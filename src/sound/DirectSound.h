@@ -67,7 +67,7 @@ public:
 	void shutdown();
 
 	bool loadSound(std::string name, std::string fileName);
-	bool playSound(Sound&& sound, bool asLoop);
-	bool stopSound(Sound&& sound);
+	bool playSound(Sound& sound, bool asLoop);
+	bool stopSound(Sound& sound);
 	void unloadSoundBuffer(Sound&& sound);
 };

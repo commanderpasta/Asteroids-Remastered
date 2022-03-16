@@ -33,7 +33,7 @@ float SmallShipModel::calcProjectileDirection(float playerPosition[2]) {
 	float preciseDirection = -atan2(playerPosition[1] - this->position[1], playerPosition[0] - this->position[0]) + MY_PI / 2;
 
 	bool missLeftOrRight = randomBool();
-	return preciseDirection += missLeftOrRight ? this->shootingInaccuracy : -(this->shootingInaccuracy);
+	return preciseDirection += missLeftOrRight ? this->shootingInaccuracy : -(this->shootingInaccuracy); //links oder rechts unakkurat
 }
 
 /**

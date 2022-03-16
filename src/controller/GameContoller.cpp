@@ -24,7 +24,7 @@ void GameController::setupSound() {
 
     //Pre-load every sound that will be used
     for (std::string& fileName : this->model->soundFileList) {
-        this->soundApi.loadSound(fileName, "res/sounds/" + fileName + ".wav");
+        this->soundApi.loadSound(fileName, "res/sounds/" + fileName + ".wav"); //mithilfe fl studio erstellt
     }
 }
 
@@ -38,14 +38,14 @@ void GameController::updateSound() {
         if (it != this->soundApi.sounds.end()) {
             switch (change.action) {
                 case GameModel::SoundAction::PLAY:
-                    this->soundApi.playSound(std::move(*it), false);
+                    this->soundApi.playSound(*it, false);
                     break;
                 case GameModel::SoundAction::STOP:
-                    this->soundApi.stopSound(std::move(*it));
+                    this->soundApi.stopSound(*it);
                     break;
                 case GameModel::SoundAction::LOOP:
                     if (!it->isLooping) {
-                        this->soundApi.playSound(std::move(*it), true);
+                        this->soundApi.playSound(*it, true);
                     }
                     break;
                 default:

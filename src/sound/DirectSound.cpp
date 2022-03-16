@@ -322,7 +322,7 @@ void DirectSound::unloadSoundBuffer(Sound&& sound)
  * \param asLoop A bool that says whether the sound should play in a loop. The loop can be stopped manually.
  * \return A bool that says whether the sound has been played successfully.
  */
-bool DirectSound::playSound(Sound&& sound, bool asLoop)
+bool DirectSound::playSound(Sound& sound, bool asLoop) //&& pass von rvalue reference
 {
 	HRESULT result;
 
@@ -365,7 +365,7 @@ bool DirectSound::playSound(Sound&& sound, bool asLoop)
  * \param sound The sound that should be stopped.
  * \return A bool that says whether the sound has been stopped successfully.
  */
-bool DirectSound::stopSound(Sound&& sound)
+bool DirectSound::stopSound(Sound& sound)
 {
 	HRESULT result;
 
